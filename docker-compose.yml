@@ -18,9 +18,9 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: 'person'
-      MYSQL_USER: 'machine'
-      MYSQL_PASSWORD: 'J&0Ra6D1%#0PSz'
+      MYSQL_DATABASE: 'twitter_app_db'
+      MYSQL_USER: 'dockerlocal'
+      MYSQL_PASSWORD: '1qI$9$$NkTWm81'
       MYSQL_ROOT_PASSWORD: '1623'
     volumes:
       - db_data:/var/lib/mysql
