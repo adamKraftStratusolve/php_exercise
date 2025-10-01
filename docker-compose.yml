@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   php-apache:
     build: .
@@ -8,22 +6,3 @@ services:
       - "8080:80"
     volumes:
       - .:/var/www/html/
-    depends_on:
-      - db
-
-  db:
-    image: mysql:8.0
-    container_name: mysql_db
-    restart: unless-stopped
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_DATABASE: 'twitter_app_db'
-      MYSQL_USER: 'dockerlocal'
-      MYSQL_PASSWORD: '1qI$9$$NkTWm81'
-      MYSQL_ROOT_PASSWORD: '1623'
-    volumes:
-      - db_data:/var/lib/mysql
-
-volumes:
-  db_data:

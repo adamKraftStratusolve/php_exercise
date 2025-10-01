@@ -1,11 +1,15 @@
 <?php
 require_once 'db_config.php';
-require_once 'Model_Repositories/Users.php';
+require_once './Model_Repositories/Users.php';
 
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user = new Users();
+
+    $pdo = Database::getConnection();
+
+    $user = new Users($pdo);
+
     $user->Username = $_POST['username'];
     $user->Password = $_POST['password'];
 
@@ -16,8 +20,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['username'] = $loggedInUser->Username;
 
         header('Location: /index.php');
+        // --- Postman API Endpoint ---\\
+        header('Content-Type: application/json');
+        echo json_encode($loggedInUser);
         exit();
     } else {
-        echo "Invalid username or password.";
+        http_response_code(401);
+        // --- Postman API Endpoint ---\\
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Invalid username or password.']);
     }
 }
