@@ -1,7 +1,5 @@
-/* --- Google Font Import --- */
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@500;600;700&display=swap');
 
-/* --- CSS Variables (Design System) --- */
 :root {
     --primary-blue: #007BFF;
     --secondary-teal: #17A2B8;
@@ -12,7 +10,6 @@
     --border-grey: #DEE2E6;
 }
 
-/* --- Global & Reset Styles --- */
 * {
     margin: 0;
     padding: 0;
@@ -46,7 +43,6 @@ a:hover {
     padding: 0 1rem;
 }
 
-/* --- Shared Component Styles --- */
 .card {
     background-color: var(--surface-white);
     border: 1px solid var(--border-grey);
@@ -118,7 +114,6 @@ a:hover {
     margin: 0;
 }
 
-/* --- Main App Layout Styles (Navbar) --- */
 .navbar {
     background-color: var(--surface-white);
     padding: 0.75rem 2rem;

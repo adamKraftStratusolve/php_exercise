@@ -1,0 +1,28 @@
+.signup-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+}
+
+.signup-card {
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+}
+
+.signup-card .logo {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 1rem;
+}
+
+.signup-card h1 {
+    margin-bottom: 2rem;
+}
+
+.signup-card .login-link {
+    margin-top: 1.5rem;
+    color: var(--secondary-text);
+}
