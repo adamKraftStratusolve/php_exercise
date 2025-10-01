@@ -1,22 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - ConnectSphere</title>
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/profile.css">
-</head>
 <body>
 <nav class="navbar">
-    <a href="index.html" class="nav-brand">
-        <img src="../logo.svg" alt="ConnectSphere Logo" class="logo">
-        <span>ConnectSphere</span>
-    </a>
     <div class="nav-links">
-        <span>Welcome, Alex!</span>
+        <span id="welcome-message">Welcome!</span>
         <a href="profile.html">Profile</a>
-        <a href="login.html">Logout</a>
+        <a href="#" id="logout-link">Logout</a>
     </div>
 </nav>
 
@@ -25,27 +14,21 @@
         <h2>Your Profile</h2>
         <p class="profile-subtitle">View and update your personal information.</p>
 
-        <form action="#">
+        <form id="profile-form">
+            <div id="message-display" class="message"></div>
+
             <div class="form-group">
                 <label for="firstName">First Name</label>
-                <input type="text" id="firstName" value="Alex">
-            </div>
-            <div class="form-group">
-                <label for="lastName">Last Name</label>
-                <input type="text" id="lastName" value="Williams">
-            </div>
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" value="alex.williams@example.com">
+                <input type="text" id="firstName">
             </div>
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" id="username" value="alexw" disabled>
-            </div>
+                <input type="text" id="username" disabled> </div>
 
             <hr class="profile-separator">
 
             <h3>Change Password</h3>
+            <p class="profile-subtitle">Leave blank to keep your current password.</p>
             <div class="form-group">
                 <label for="currentPassword">Current Password</label>
                 <input type="password" id="currentPassword">
@@ -59,5 +42,9 @@
         </form>
     </div>
 </main>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="../javascript/apiservice.js"></script>
+<script src="../javascript/profile.js"></script>
 </body>
 </html>

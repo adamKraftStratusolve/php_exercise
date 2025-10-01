@@ -21,9 +21,8 @@ class Users extends Model {
     public function getUserByCredentials() {
         $user_data = $this->findByUsername();
 
-        // Check if user was found and password is correct
         if ($user_data && password_verify($this->Password, $user_data['password'])) {
-            // If valid, map the data to a new User object and return it
+
             $userObject = new Users($this->pdo);
             $userObject->mapData($user_data);
             return $userObject;
@@ -35,7 +34,7 @@ class Users extends Model {
     public function findByUsername() {
         $sql = "SELECT * FROM users WHERE username = :username";
         $statement = $this->run($sql, ['username' => $this->Username]);
-        return $statement->fetch(); // Fetch as an associative array
+        return $statement->fetch();
     }
 
     public function findById() {
@@ -43,7 +42,7 @@ class Users extends Model {
         $statement = $this->run($sql, ['user_id' => $this->PersonId]);
         $data = $statement->fetch();
         if ($data) {
-            $this->mapData($data); // Populate the current object
+            $this->mapData($data);
             return $this;
         }
         return false;
@@ -64,15 +63,32 @@ class Users extends Model {
     }
 
     public function updateUser() {
-        $sql = "UPDATE users SET first_name = :first_name, last_name = :last_name, email_address = :email_address, username = :username WHERE user_id = :user_id";
+        $sql = "UPDATE users SET first_name = :first_name, last_name = :last_name, email_address = :email_address WHERE user_id = :user_id";
         $params = [
             'first_name' => $this->FirstName,
             'last_name' => $this->LastName,
             'email_address' => $this->EmailAddress,
-            'username' => $this->Username,
             'user_id' => $this->PersonId
         ];
         $statement = $this->run($sql, $params);
         return $statement->rowCount() > 0;
+    }
+
+    public function updatePassword($currentPassword, $newPassword) {
+        $user_data = $this->run("SELECT password FROM users WHERE user_id = :user_id", ['user_id' => $this->PersonId])->fetch();
+
+        if ($user_data && password_verify($currentPassword, $user_data['password'])) {
+
+            $newHashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+            $sql = "UPDATE users SET password = :password WHERE user_id = :user_id";
+            $params = [
+                'password' => $newHashedPassword,
+                'user_id' => $this->PersonId
+            ];
+            $statement = $this->run($sql, $params);
+            return $statement->rowCount() > 0;
+        }
+
+        return false;
     }
 }

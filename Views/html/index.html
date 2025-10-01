@@ -14,37 +14,20 @@
         <span>ConnectSphere</span>
     </a>
     <div class="nav-links">
-        <span>Welcome, Alex!</span>
+        <span id="welcome-message">Welcome!</span>
         <a href="profile.html">Profile</a>
-        <a href="login.html">Logout</a>
+        <a href="#" id="logout-link">Logout</a>
     </div>
 </nav>
 
 <main class="container">
-    <div class="card create-post-card">
-        What's on your mind, Alex?
+    <div class="card create-post-card" id="create-post-trigger">
+        What's on your mind?
     </div>
 
     <h2>Latest Posts</h2>
 
-    <div class="card post-card">
-        <div class="post-header">
-            <div class="user-info">Jane Doe <span>@janedoe</span></div>
-            <div class="timestamp">2 hours ago</div>
-        </div>
-        <p class="post-body">
-            Just finished setting up my new workspace. It feels great to have a dedicated spot for creativity! 💻✨
-        </p>
-    </div>
-
-    <div class="card post-card">
-        <div class="post-header">
-            <div class="user-info">John Smith <span>@johnsmith</span></div>
-            <div class="timestamp">5 hours ago</div>
-        </div>
-        <p class="post-body">
-            Excited to announce that our team project is finally launching next week. It's been a long journey, but worth every moment.
-        </p>
+    <div id="posts-container">
     </div>
 </main>
 
@@ -52,20 +35,24 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2>Create a New Post</h2>
-            <button class="close-btn">&times;</button>
+            <button class="close-btn" id="modal-close-btn">&times;</button>
         </div>
         <div class="modal-body">
-            <form>
-                <label>
-                    <textarea placeholder="What's on your mind?"></textarea>
-                </label>
+            <form id="create-post-form">
+                <textarea id="post-textarea" placeholder="What's on your mind?" required></textarea>
+                <div id="modal-error-message" class="error" style="display: none;"></div>
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-outline">Cancel</button>
-            <button class="btn btn-primary">Post</button>
+            <button class="btn btn-outline" id="modal-cancel-btn">Cancel</button>
+            <button type="submit" form="create-post-form" class="btn btn-primary" id="modal-post-btn">Post</button>
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="../javascript/apiService.js"></script>
+<script src="../javascript/index.js"></script>
+
 </body>
 </html>

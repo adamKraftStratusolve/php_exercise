@@ -26,3 +26,19 @@
     margin-top: 1.5rem;
     color: var(--secondary-text);
 }
+
+.message {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    display: none;
+    text-align: center;
+}
+.message.success {
+    color: #155724;
+    background-color: #D4EDDA;
+}
+.message.error {
+    color: #721C24;
+    background-color: #F8D7DA;
+}
