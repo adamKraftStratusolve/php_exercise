@@ -2,25 +2,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const welcomeMessage = document.getElementById('welcome-message');
     const postsContainer = document.getElementById('posts-container');
     const logoutLink = document.getElementById('logout-link');
-
     const postModal = document.getElementById('postModal');
     const createPostTrigger = document.getElementById('create-post-trigger');
     const closeModalBtn = document.getElementById('modal-close-btn');
     const cancelModalBtn = document.getElementById('modal-cancel-btn');
-    const createPostForm = document.getElementById('create-post-form');
     const postTextarea = document.getElementById('post-textarea');
-    const modalErrorMessage = document.getElementById('modal-error-message');
 
     const renderPost = (post) => {
-        const postCard = document.createElement('div');
-        postCard.className = 'card post-card';
-        postCard.innerHTML = `
-            <div class="post-header">
-                <div class="user-info">${post.FirstName} ${post.LastName} <span>@${post.Username}</span></div>
-                <div class="timestamp">${new Date(post.CreatedAt).toLocaleString()}</div>
-            </div>
-            <p class="post-body">${post.PostText}</p>
-        `;
+        const postCard = createPostCard(post, { showHeader: true });
         postsContainer.append(postCard);
     };
 
@@ -28,10 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
         apiService.get('/index.php')
             .then(posts => {
                 postsContainer.innerHTML = '';
-                posts.forEach(post => renderPost(post));
+                posts.forEach(renderPost); // Call the simplified function
             })
             .catch(error => {
-                postsContainer.innerHTML = `<p class="error">Could not load posts. ${error.message}</p>`;
+                if (error.message !== 'Redirecting to login.') {
+                    postsContainer.innerHTML = `<p class="error">Could not load posts. ${error.message}</p>`;
+                }
             });
     };
 
@@ -43,8 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 createPostTrigger.textContent = `What's on your mind, ${user.FirstName}?`;
             })
             .catch(error => {
-                console.error("Could not fetch user profile:", error);
-                welcomeMessage.textContent = 'Welcome!';
+                if (error.message !== 'Redirecting to login.') {
+                    console.error("Could not fetch user profile:", error);
+                }
             });
     };
 
@@ -52,46 +44,27 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModalBtn.addEventListener('click', () => postModal.style.display = 'none');
     cancelModalBtn.addEventListener('click', () => postModal.style.display = 'none');
 
-    createPostForm.addEventListener('submit', (event) => {
-        console.log('1. Form submission event fired!');
-
-        event.preventDefault();
-        modalErrorMessage.style.display = 'none';
-
-        const postText = postTextarea.value.trim();
-        if (!postText) {
-            modalErrorMessage.textContent = 'Post cannot be empty.';
-            modalErrorMessage.style.display = 'block';
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('post_text', postText);
-
-        console.log('2. Preparing to send API request...');
-
-        apiService.post('/Services/create_post.php', formData)
-            .then(() => {
-                postModal.style.display = 'none';
-                postTextarea.value = '';
-                fetchAndRenderPosts();
-            })
-            .catch(error => {
-                modalErrorMessage.textContent = error.message;
-                modalErrorMessage.style.display = 'block';
-            });
+    handleFormSubmit('create-post-form', '/Services/create_post.php', {
+        messageId: 'modal-error-message',
+        beforeSubmit: () => {
+            if (postTextarea.value.trim() === '') {
+                const messageDiv = document.getElementById('modal-error-message');
+                messageDiv.textContent = 'Post cannot be empty.';
+                messageDiv.style.display = 'block';
+                return false;
+            }
+            return true;
+        },
+        onSuccess: () => {
+            postModal.style.display = 'none';
+            postTextarea.value = '';
+            fetchAndRenderPosts();
+        },
     });
 
     logoutLink.addEventListener('click', (event) => {
         event.preventDefault();
-        apiService.post('/Services/logout.php', {})
-            .then(() => {
-                window.location.href = 'login.html';
-            })
-            .catch(error => {
-                console.error('Logout failed:', error);
-                alert('Could not log out. Please try again.');
-            });
+        apiService.post('/Services/logout.php', {}).then(() => window.location.href = 'login.html');
     });
 
     fetchUserProfile();

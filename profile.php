@@ -4,21 +4,13 @@ require_once 'db_config.php';
 require_once './Model_Repositories/Users.php';
 require_once './Model_Repositories/Posts.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header('Location: /login.html?error=unauthorized');
-    exit();
-}
-
-$pdo = Database::getConnection();
-
-$user = new Users($pdo);
+$user = new Users();
 $user->PersonId = $_SESSION['user_id'];
 $currentUser = $user->findById();
 
-$postsInstance = new Posts($pdo);
+$postsInstance = new Posts();
 $userPosts = $postsInstance->getPostsByUserId($_SESSION['user_id']);
 
-// --- Postman API Endpoint ---\\
 header('Content-Type: application/json');
 
 $response_data = [

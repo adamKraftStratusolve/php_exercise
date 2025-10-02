@@ -21,9 +21,7 @@ if (!$postId) {
 }
 
 try {
-    $pdo = Database::getConnection();
-    $postsInstance = new Posts($pdo);
-
+    $postsInstance = new Posts();
     $success = $postsInstance->deletePost($postId, $userId);
 
     if ($success) {

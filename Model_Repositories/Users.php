@@ -18,25 +18,6 @@ class Users extends Model {
         'password' => 'Password'
     ];
 
-    public function getUserByCredentials() {
-        $user_data = $this->findByUsername();
-
-        if ($user_data && password_verify($this->Password, $user_data['password'])) {
-
-            $userObject = new Users($this->pdo);
-            $userObject->mapData($user_data);
-            return $userObject;
-        }
-
-        return false;
-    }
-
-    public function findByUsername() {
-        $sql = "SELECT * FROM users WHERE username = :username";
-        $statement = $this->run($sql, ['username' => $this->Username]);
-        return $statement->fetch();
-    }
-
     public function findById() {
         $sql = "SELECT * FROM users WHERE user_id = :user_id";
         $statement = $this->run($sql, ['user_id' => $this->PersonId]);

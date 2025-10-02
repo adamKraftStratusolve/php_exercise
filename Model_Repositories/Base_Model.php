@@ -5,8 +5,8 @@ abstract class Model {
     protected $pdo;
     protected $map = [];
 
-    public function __construct(PDO $pdo) {
-        $this->pdo = $pdo;
+    public function __construct() {
+        $this->pdo = Database::getConnection();
     }
 
     protected function run(string $query, array $params = []): PDOStatement {

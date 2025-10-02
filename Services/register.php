@@ -13,13 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user->Password = $_POST['password'];
 
     if ($user->createUser()) {
-        // --- Postman API Response ---
         header('Content-Type: application/json');
         http_response_code(201);
         echo json_encode(['success' => 'User registered successfully.']);
         exit();
     } else {
-        // --- Postman API Response ---
         header('Content-Type: application/json');
         http_response_code(500);
         echo json_encode(['error' => 'Could not create user.']);

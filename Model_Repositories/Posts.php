@@ -24,10 +24,6 @@ class Posts extends Model {
         ];
         $statement = $this->run($sql, $params);
 
-        if ($statement->rowCount() > 0) {
-            $this->pdo->commit();
-        }
-
         return $statement->rowCount() > 0;
     }
 

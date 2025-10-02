@@ -21,9 +21,7 @@ if (empty($credential) || empty($password)) {
 }
 
 try {
-    $pdo = Database::getConnection();
-    $userInstance = new Users($pdo);
-
+    $userInstance = new Users();
     $user = $userInstance->findByCredential($credential);
 
     if ($user && password_verify($password, $user['password'])) {

@@ -24,9 +24,7 @@ $data = [
 ];
 
 try {
-    $pdo = Database::getConnection();
-    $userInstance = new Users($pdo);
-
+    $userInstance = new Users();
     $result = $userInstance->updateProfile($data);
 
     if ($result['success']) {
