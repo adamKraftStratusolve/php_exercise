@@ -17,11 +17,23 @@ const apiService = {
             const response = await axios.get(url);
             return response.data;
         } catch (error) {
-            let errorMessage = 'An unexpected error occurred while fetching data.';
-            if (error.response && error.response.data && error.response.data.error) {
-                errorMessage = error.response.data.error;
-            }
-            throw new Error(errorMessage);
+            return this.handleError(error);
         }
+    },
+
+    handleError(error) {
+
+        if (error.response && error.response.status === 401) {
+
+            window.location.href = '/Views/html/login.html';
+            throw new Error('Redirecting to login.');
+        }
+
+        let errorMessage = 'An unexpected error occurred.';
+        if (error.response && error.response.data && error.response.data.error) {
+
+            errorMessage = error.response.data.error;
+        }
+        throw new Error(errorMessage);
     }
 };

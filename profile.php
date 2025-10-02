@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once 'auth_check.php';
 require_once 'db_config.php';
 require_once './Model_Repositories/Users.php';
 require_once './Model_Repositories/Posts.php';

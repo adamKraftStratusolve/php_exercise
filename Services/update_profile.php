@@ -1,51 +1,41 @@
 <?php
-session_start();
+require_once '../auth_check.php';
 require_once '../db_config.php';
 require_once '../Model_Repositories/Users.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header('Content-Type: application/json');
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
+header('Content-Type: application/json');
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => 'Only POST method is accepted.']);
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+$userId = $_SESSION['user_id'];
+
+$data = [
+    'user_id' => $userId,
+    'first_name' => $_POST['first_name'] ?? '',
+    'last_name' => $_POST['last_name'] ?? '',
+    'email' => $_POST['email'] ?? '',
+    'username' => $_POST['username'] ?? '',
+    'current_password' => $_POST['current_password'] ?? null,
+    'new_password' => $_POST['new_password'] ?? null
+];
+
+try {
     $pdo = Database::getConnection();
-    $user = new Users($pdo);
-    $user->PersonId = $_SESSION['user_id'];
+    $userInstance = new Users($pdo);
 
-    $profileUpdated = false;
-    $passwordUpdated = false;
-    $error = null;
+    $result = $userInstance->updateProfile($data);
 
-    if (isset($_POST['first_name']) || isset($_POST['last_name']) || isset($_POST['email'])) {
-        $user->FirstName = $_POST['first_name'];
-        $user->LastName = $_POST['last_name'];
-        $user->EmailAddress = $_POST['email'];
-        if ($user->updateUser()) {
-            $profileUpdated = true;
-        }
-    }
-
-    if (!empty($_POST['current_password']) && !empty($_POST['new_password'])) {
-        if ($user->updatePassword($_POST['current_password'], $_POST['new_password'])) {
-            $passwordUpdated = true;
-        } else {
-            $error = 'Incorrect current password.';
-        }
-    }
-
-    header('Content-Type: application/json');
-    if ($profileUpdated || $passwordUpdated) {
-        $updatedUser = $user->findById();
-        echo json_encode($updatedUser);
-    } elseif ($error) {
-        http_response_code(400);
-        echo json_encode(['error' => $error]);
+    if ($result['success']) {
+        echo json_encode(['success' => true, 'message' => $result['message']]);
     } else {
-        http_response_code(200);
-        echo json_encode(['message' => 'No changes were made to the profile.']);
+        http_response_code(400);
+        echo json_encode(['error' => $result['message']]);
     }
-    exit();
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'An error occurred while updating the profile.']);
 }

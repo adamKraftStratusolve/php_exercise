@@ -1,33 +1,42 @@
 <?php
+session_start();
 require_once 'db_config.php';
 require_once './Model_Repositories/Users.php';
 
-session_start();
+header('Content-Type: application/json');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => 'Only POST method is accepted.']);
+    exit();
+}
 
+$credential = $_POST['username'] ?? '';
+$password = $_POST['password'] ?? '';
+
+if (empty($credential) || empty($password)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Username/email and password are required.']);
+    exit();
+}
+
+try {
     $pdo = Database::getConnection();
+    $userInstance = new Users($pdo);
 
-    $user = new Users($pdo);
+    $user = $userInstance->findByCredential($credential);
 
-    $user->Username = $_POST['username'];
-    $user->Password = $_POST['password'];
+    if ($user && password_verify($password, $user['password'])) {
+        $_SESSION['user_id'] = $user['user_id'];
+        $_SESSION['username'] = $user['username'];
 
-    $loggedInUser = $user->getUserByCredentials();
-
-    if ($loggedInUser) {
-        $_SESSION['user_id'] = $loggedInUser->PersonId;
-        $_SESSION['username'] = $loggedInUser->Username;
-
-        header('Location: /index.php');
-        // --- Postman API Endpoint ---\\
-        header('Content-Type: application/json');
-        echo json_encode($loggedInUser);
-        exit();
+        http_response_code(200);
+        echo json_encode(['success' => 'Login successful.']);
     } else {
         http_response_code(401);
-        // --- Postman API Endpoint ---\\
-        header('Content-Type: application/json');
-        echo json_encode(['error' => 'Invalid username or password.']);
+        echo json_encode(['error' => 'Invalid credentials.']);
     }
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
 }

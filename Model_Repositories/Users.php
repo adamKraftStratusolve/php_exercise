@@ -63,13 +63,16 @@ class Users extends Model {
     }
 
     public function updateUser() {
-        $sql = "UPDATE users SET first_name = :first_name, last_name = :last_name, email_address = :email_address WHERE user_id = :user_id";
+        $sql = "UPDATE users SET first_name = :first_name, last_name = :last_name, email_address = :email_address, username = :username WHERE user_id = :user_id";
+
         $params = [
             'first_name' => $this->FirstName,
             'last_name' => $this->LastName,
             'email_address' => $this->EmailAddress,
+            'username' => $this->Username,
             'user_id' => $this->PersonId
         ];
+
         $statement = $this->run($sql, $params);
         return $statement->rowCount() > 0;
     }
@@ -90,5 +93,49 @@ class Users extends Model {
         }
 
         return false;
+    }
+
+    public function updateProfile($data) {
+
+        $this->PersonId = $data['user_id'];
+        $this->FirstName = $data['first_name'];
+        $this->LastName = $data['last_name'];
+        $this->EmailAddress = $data['email'];
+        $this->Username = $data['username'];
+
+        $detailsUpdated = $this->updateUser();
+
+        $passwordMessage = '';
+        if (!empty($data['new_password'])) {
+            if (empty($data['current_password'])) {
+                return ['success' => false, 'message' => 'Current password is required to set a new one.'];
+            }
+
+            $passwordUpdated = $this->updatePassword($data['current_password'], $data['new_password']);
+
+            if ($passwordUpdated) {
+                $passwordMessage = ' Password was also updated.';
+            } else {
+                $message = 'Current password was incorrect. Profile details were saved, but the password was not changed.';
+                return ['success' => false, 'message' => $message];
+            }
+        }
+
+        if ($detailsUpdated || !empty($passwordMessage)) {
+            return ['success' => true, 'message' => 'Profile updated successfully.' . $passwordMessage];
+        } else {
+            return ['success' => true, 'message' => 'No changes were made.'];
+        }
+    }
+
+    public function findByCredential($credential) {
+        $sql = "SELECT * FROM users WHERE username = :uname OR email_address = :email";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            'uname' => $credential,
+            'email' => $credential
+        ]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }

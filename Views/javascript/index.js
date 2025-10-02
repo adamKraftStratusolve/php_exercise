@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <p class="post-body">${post.PostText}</p>
         `;
-        postsContainer.prepend(postCard);
+        postsContainer.append(postCard);
     };
 
     const fetchAndRenderPosts = () => {
@@ -53,6 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelModalBtn.addEventListener('click', () => postModal.style.display = 'none');
 
     createPostForm.addEventListener('submit', (event) => {
+        console.log('1. Form submission event fired!');
+
         event.preventDefault();
         modalErrorMessage.style.display = 'none';
 
@@ -65,6 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData();
         formData.append('post_text', postText);
+
+        console.log('2. Preparing to send API request...');
 
         apiService.post('/Services/create_post.php', formData)
             .then(() => {
@@ -82,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         apiService.post('/Services/logout.php', {})
             .then(() => {
-                window.location.href = '../html/login.html';
+                window.location.href = 'login.html';
             })
             .catch(error => {
                 console.error('Logout failed:', error);

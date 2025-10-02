@@ -1,0 +1,2 @@
+RewriteEngine On
+RewriteRule ^$ /Views/html/login.html [R=302,L]

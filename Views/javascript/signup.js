@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Select all the form elements
+
     const signupForm = document.getElementById('signup-form');
-    const fullNameInput = document.getElementById('fullName');
+    const firstNameInput = document.getElementById('firstName'); // New
+    const lastNameInput = document.getElementById('lastName');   // New
     const usernameInput = document.getElementById('username');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
@@ -21,30 +22,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData();
 
-        const nameParts = fullNameInput.value.trim().split(' ');
-        const firstName = nameParts.shift() || '';
-        const lastName = nameParts.join(' ') || '';
-
-        formData.append('first_name', firstName);
-        formData.append('last_name', lastName);
+        formData.append('first_name', firstNameInput.value);
+        formData.append('last_name', lastNameInput.value);
         formData.append('username', usernameInput.value);
         formData.append('email', emailInput.value);
         formData.append('password', passwordInput.value);
 
         apiService.post('/Services/register.php', formData)
             .then(data => {
-
                 messageDiv.textContent = data.success + ' Redirecting to login...';
                 messageDiv.className = 'message success';
                 messageDiv.style.display = 'block';
                 signupForm.reset();
 
                 setTimeout(() => {
-                    window.location.href = '../html/login.html';
+                    window.location.href = 'login.html';
                 }, 2000);
             })
             .catch(error => {
-
                 messageDiv.textContent = error.message;
                 messageDiv.className = 'message error';
                 messageDiv.style.display = 'block';

@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
         apiService.post('/login.php', formData)
             .then(data => {
                 console.log('Login successful:', data);
-                window.location.href = '../html/index.html';
+                window.location.href = 'index.html';
             })
             .catch(error => {
                 console.error('Login failed:', error.message);

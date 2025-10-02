@@ -1,12 +1,7 @@
 <?php
-session_start();
+require_once '../auth_check.php';
 require_once '../db_config.php';
 require_once '../Model_Repositories/Posts.php';
-
-if (!isset($_SESSION['user_id'])) {
-    header('Location: /login.html?error=unauthorized');
-    exit();
-}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['post_text'])) {
     $pdo = Database::getConnection();
