@@ -45,6 +45,9 @@ function createPostCard(post, options = {}) {
     const firstName = post.FirstName || '';
     const lastName = post.LastName || '';
     const username = post.Username || '';
+    const avatarUrl = post.profile_image_url || '/Uploads/default-avatar.png';
+    const avatarHTML = `<div class="post-avatar"><img src="${avatarUrl}" alt="${post.Username}'s avatar"></div>`;
+
 
     const headerHTML = options.showHeader ? `
         <div class="post-header">
@@ -57,19 +60,25 @@ function createPostCard(post, options = {}) {
         <button class="btn btn-danger delete-btn">Delete</button>
     ` : '';
 
-    postCard.innerHTML = `
-        ${headerHTML}
-        <p class="post-body">${post.PostText}</p>
-        <div class="post-meta">
-            <span>${new Date(post.CreatedAt).toLocaleString()}</span>
-            ${deleteButtonHTML}
+    const postContentHTML = `
+        <div class="post-content">
+            <div class="post-header">
+                <div class="user-info">${post.FirstName || ''} ${post.LastName || ''} <span>@${post.Username}</span></div>
+            </div>
+            <p class="post-body">${post.PostText}</p>
+            <div class="post-meta">
+                <span>${new Date(post.CreatedAt).toLocaleString()}</span>
+                ${options.showDeleteButton ? '<button class="btn btn-danger delete-btn">Delete</button>' : ''}
+            </div>
         </div>
     `;
+
 
     if (!options.showHeader) postCard.querySelector('.post-header')?.remove();
     if (!options.showDeleteButton && !postCard.querySelector('.post-meta span')) {
         postCard.querySelector('.post-meta')?.remove();
     }
 
+    postCard.innerHTML = avatarHTML + postContentHTML;
     return postCard;
 }

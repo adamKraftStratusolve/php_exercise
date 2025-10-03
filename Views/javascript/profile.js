@@ -10,6 +10,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageDiv = document.getElementById('message-display');
     const logoutLink = document.getElementById('logout-link');
     const postsContainer = document.getElementById('user-posts-container');
+    const profilePicturePreview = document.getElementById('profile-picture-preview');
+    const pictureInput = document.getElementById('picture-input');
+    const savePictureBtn = document.getElementById('save-picture-btn');
+    const pictureMessage = document.getElementById('picture-message');
+    let selectedFile = null;
 
     const renderPosts = (posts) => {
         postsContainer.innerHTML = '';
@@ -32,6 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 emailInput.value = user.EmailAddress;
                 usernameInput.value = user.Username;
                 welcomeMessage.textContent = `Welcome, ${user.FirstName}!`;
+                profilePicturePreview.src = data.profile.profile_image_url || '/Uploads/default-avatar.png';
+
                 renderPosts(data.posts);
             })
             .catch(error => {
@@ -42,6 +49,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
     };
+
+    pictureInput.addEventListener('change', (event) => {
+        selectedFile = event.target.files[0];
+        if (selectedFile) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                profilePicturePreview.src = e.target.result;
+            };
+            reader.readAsDataURL(selectedFile);
+            savePictureBtn.style.display = 'inline-block';
+        }
+    });
+
+    savePictureBtn.addEventListener('click', () => {
+        if (!selectedFile) return;
+
+        const formData = new FormData();
+        formData.append('profile_picture', selectedFile);
+
+        apiService.post('/Services/upload_picture.php', formData)
+            .then(data => {
+                pictureMessage.textContent = 'Picture updated successfully!';
+                pictureMessage.className = 'message success';
+                pictureMessage.style.display = 'block';
+                savePictureBtn.style.display = 'none';
+                profilePicturePreview.src = data.imageUrl;
+            })
+            .catch(error => {
+                pictureMessage.textContent = error.message;
+                pictureMessage.className = 'message error';
+                pictureMessage.style.display = 'block';
+            });
+    });
 
     handleFormSubmit('profile-form', '/Services/update_profile.php', {
         messageId: 'message-display',

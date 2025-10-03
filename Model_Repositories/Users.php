@@ -130,4 +130,14 @@ class Users extends Model {
         $statement = $this->run($sql, $params);
         return $statement->rowCount() > 0;
     }
+
+    public function updateProfilePicture(int $userId, string $imageUrl): bool {
+        $sql = "UPDATE users SET profile_image_url = :image_url WHERE user_id = :user_id";
+        $params = [
+            'image_url' => $imageUrl,
+            'user_id' => $userId
+        ];
+        $statement = $this->run($sql, $params);
+        return $statement->rowCount() > 0;
+    }
 }

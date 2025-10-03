@@ -140,3 +140,32 @@ a:hover {
     margin-left: 1.5rem;
     font-weight: 500;
 }
+
+.post-card {
+    display: flex;
+    gap: 15px;
+}
+
+.post-avatar img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.post-content {
+    flex: 1;
+}
+
+.profile-picture-container {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.profile-picture-container img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #eee;
+}

@@ -30,17 +30,18 @@ class Posts extends Model {
     public function getAllPosts() {
 
         $sql = "SELECT
-                p.post_text AS PostText,
-                p.post_timestamp AS CreatedAt,
-                u.Username,
-                u.first_name AS FirstName,
-                u.last_name AS LastName
-            FROM
-                posts p
-            JOIN
-                users u ON p.user_id = u.user_id
-            ORDER BY
-                p.post_timestamp DESC;";
+            p.post_text AS PostText,
+            p.post_timestamp AS CreatedAt,
+            u.username AS Username,
+            u.first_name AS FirstName,
+            u.last_name AS LastName,
+            u.profile_image_url AS profile_image_url  
+        FROM
+            posts p
+        JOIN
+            users u ON p.user_id = u.user_id
+        ORDER BY
+            p.post_timestamp DESC;";
 
         $statement = $this->run($sql);
 
