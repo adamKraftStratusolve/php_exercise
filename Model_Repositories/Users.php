@@ -119,4 +119,15 @@ class Users extends Model {
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    public function forcePasswordUpdate(int $userId, string $newPassword): bool {
+        $newHashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+        $sql = "UPDATE users SET password = :password WHERE user_id = :user_id";
+        $params = [
+            'password' => $newHashedPassword,
+            'user_id' => $userId
+        ];
+        $statement = $this->run($sql, $params);
+        return $statement->rowCount() > 0;
+    }
 }

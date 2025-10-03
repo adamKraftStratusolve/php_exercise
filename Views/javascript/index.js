@@ -68,5 +68,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     fetchUserProfile();
-    fetchAndRenderPosts();
+    setInterval(fetchAndRenderPosts, 2000);
 });
