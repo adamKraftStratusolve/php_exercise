@@ -1,8 +1,8 @@
 <?php
+require_once 'api_helpers.php';
+
 session_start();
 session_unset();
 session_destroy();
 
-header('Content-Type: application/json');
-echo json_encode(['success' => 'User logged out successfully.']);
-exit();
+ApiResponse::success('User logged out successfully.');

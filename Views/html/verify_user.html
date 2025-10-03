@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Verify Identity - ConnectSphere</title>
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/login.css">
 </head>
 <body>
 <div class="login-container">
@@ -13,8 +12,8 @@
 
         <h1>Verify Your Identity</h1>
         <p>Please enter your username and email to proceed.</p>
-        <form id="verify-user-form">
-            <div id="error-message" class="error"></div>
+        <form id="verifyUserForm">
+            <div id="errorMessage" class="error"></div>
             <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" required>
@@ -30,6 +29,6 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="../javascript/apiservice.js"></script>
 <script src="../javascript/utils.js"></script>
-<script src="../javascript/verify-user.js"></script>
+<script src="../javascript/verify_user.js"></script>
 </body>
 </html>

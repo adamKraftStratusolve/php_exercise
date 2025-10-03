@@ -1,13 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const messageDiv = document.getElementById('error-message');
+    const messageDiv = document.getElementById('errorMessage');
 
-    handleFormSubmit('reset-password-form', '/Services/perform_reset.php', {
-        messageId: 'error-message',
+    handleFormSubmit('resetPasswordForm', '/Services/perform_reset.php', {
+        messageId: 'errorMessage',
         onSuccess: (data) => {
-            messageDiv.textContent = data.success + ' Redirecting to login...';
-            messageDiv.className = 'message success';
-            messageDiv.style.display = 'block';
-
+            if (messageDiv) {
+                messageDiv.textContent = data.success + ' Redirecting to login...';
+                messageDiv.className = 'message success';
+                messageDiv.style.display = 'block';
+            }
             setTimeout(() => {
                 window.location.href = 'login.html';
             }, 2000);

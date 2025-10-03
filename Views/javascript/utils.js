@@ -2,24 +2,19 @@ function handleFormSubmit(formId, apiEndpoint, options = {}) {
     const form = document.getElementById(formId);
     if (!form) return;
 
-    const messageDiv = document.getElementById(options.messageId || 'message-display');
+    const messageDiv = document.getElementById(options.messageId);
 
     form.addEventListener('submit', (event) => {
         event.preventDefault();
-        if (messageDiv) messageDiv.style.display = 'none';
-
-        if (options.beforeSubmit) {
-            const proceed = options.beforeSubmit();
-            if (!proceed) return;
+        if (messageDiv) {
+            messageDiv.style.display = 'none';
         }
 
-        const formData = new FormData(form);
-
-        if (options.extraData) {
-            for (const key in options.extraData) {
-                formData.append(key, options.extraData[key]);
-            }
+        if (options.beforeSubmit && !options.beforeSubmit()) {
+            return;
         }
+
+        const formData = options.getFormData ? options.getFormData(form) : new FormData(form);
 
         apiService.post(apiEndpoint, formData)
             .then(data => {
@@ -28,7 +23,7 @@ function handleFormSubmit(formId, apiEndpoint, options = {}) {
                 }
             })
             .catch(error => {
-                if (messageDiv) {
+                if (messageDiv && error.message !== 'Redirecting to login.') {
                     messageDiv.textContent = error.message;
                     messageDiv.className = 'message error';
                     messageDiv.style.display = 'block';
@@ -37,47 +32,52 @@ function handleFormSubmit(formId, apiEndpoint, options = {}) {
     });
 }
 
+
 function createPostCard(post, options = {}) {
     const postCard = document.createElement('div');
     postCard.className = 'card post-card';
-    postCard.setAttribute('data-post-id', post.PostID || post.PostId);
+    postCard.setAttribute('data-post-id', post.postId);
 
-    const firstName = post.FirstName || '';
-    const lastName = post.LastName || '';
-    const username = post.Username || '';
-    const avatarUrl = post.profile_image_url || '/Uploads/default-avatar.png';
-    const avatarHTML = `<div class="post-avatar"><img src="${avatarUrl}" alt="${post.Username}'s avatar"></div>`;
+    const avatarUrl = post.profileImageUrl || '/uploads/default-avatar.png';
+    const avatarHTML = `<div class="post-avatar"><img src="${avatarUrl}" alt="${post.username}'s avatar"></div>`;
 
+    const likedClass = post.userHasLiked ? 'liked' : '';
+    const actionsHTML = `
+        <div class="post-actions">
+            <button class="btn like-btn ${likedClass}">
+                ? <span class="like-count">${post.likeCount || 0}</span>
+            </button>
+        </div>`;
 
-    const headerHTML = options.showHeader ? `
-        <div class="post-header">
-            <div class="user-info">${firstName} ${lastName} <span>@${username}</span></div>
-            <div class="timestamp">${new Date(post.CreatedAt).toLocaleString()}</div>
-        </div>
-    ` : '';
-
-    const deleteButtonHTML = options.showDeleteButton ? `
-        <button class="btn btn-danger delete-btn">Delete</button>
-    ` : '';
+    let commentsHTML = '<div class="comments-list"></div>';
+    if (post.comments && post.comments.length > 0) {
+        const comments = post.comments.map(comment => `
+            <div class="comment">
+                <img src="${comment.profileImageUrl || '/uploads/default-avatar.png'}" alt="${comment.username}'s avatar" class="comment-avatar">
+                <div class="comment-body">
+                    <strong>${comment.username}</strong>
+                    <p>${comment.commentText}</p>
+                </div>
+            </div>
+        `).join('');
+        commentsHTML = `<div class="comments-list">${comments}</div>`;
+    }
 
     const postContentHTML = `
         <div class="post-content">
             <div class="post-header">
-                <div class="user-info">${post.FirstName || ''} ${post.LastName || ''} <span>@${post.Username}</span></div>
+                <div class="user-info">${post.firstName || ''} ${post.lastName || ''} <span>@${post.username}</span></div>
             </div>
-            <p class="post-body">${post.PostText}</p>
-            <div class="post-meta">
-                <span>${new Date(post.CreatedAt).toLocaleString()}</span>
-                ${options.showDeleteButton ? '<button class="btn btn-danger delete-btn">Delete</button>' : ''}
-            </div>
+            <p class="post-body">${post.postText}</p>
+            ${actionsHTML}
+            ${commentsHTML}
+            <form class="comment-form">
+                <input type="text" name="commentText" class="comment-input" placeholder="Write a comment..." required>
+                <input type="hidden" name="postId" value="${post.postId}">
+                <button type="submit" class="btn btn-sm">Post</button>
+            </form>
         </div>
     `;
-
-
-    if (!options.showHeader) postCard.querySelector('.post-header')?.remove();
-    if (!options.showDeleteButton && !postCard.querySelector('.post-meta span')) {
-        postCard.querySelector('.post-meta')?.remove();
-    }
 
     postCard.innerHTML = avatarHTML + postContentHTML;
     return postCard;

@@ -2,25 +2,20 @@
 require_once '../auth_check.php';
 require_once '../db_config.php';
 require_once '../Model_Repositories/Posts.php';
+require_once 'api_helpers.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['post_text'])) {
-    $post = new Posts();
-    $post->PostText = $_POST['post_text'];
-    $post->UserId = $_SESSION['user_id'];
+ApiResponse::requirePostMethod();
 
-    if ($post->createPost()) {
-        header('Content-Type: application/json');
-        http_response_code(201);
-        echo json_encode(['success' => 'Post created successfully.']);
-        exit();
-    } else {
-        header('Content-Type: application/json');
-        http_response_code(500);
-        echo json_encode(['error' => 'Could not create post.']);
-    }
+if (empty($_POST['post_text'])) {
+    ApiResponse::error('Post text cannot be empty.');
+}
+
+$post = new Posts();
+$post->PostText = $_POST['postText'];
+$post->UserId = $_SESSION['user_id'];
+
+if ($post->createPost()) {
+    ApiResponse::success('Post created successfully.', 201);
 } else {
-    header('Content-Type: application/json');
-    http_response_code(400);
-    echo json_encode(['error' => 'Post text cannot be empty.']);
-    exit();
+    ApiResponse::error('Could not create post.', 500);
 }

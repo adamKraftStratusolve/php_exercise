@@ -14,7 +14,7 @@ if (!isset($_SESSION['password_reset_uid']) || $_SESSION['password_reset_expires
 }
 
 $password = $_POST['password'] ?? '';
-$confirmPassword = $_POST['confirm_password'] ?? '';
+$confirmPassword = $_POST['confirmPassword'] ?? '';
 
 if (empty($password) || $password !== $confirmPassword) {
     ApiResponse::error('Passwords cannot be empty and must match.');

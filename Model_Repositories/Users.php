@@ -109,15 +109,15 @@ class Users extends Model {
         }
     }
 
-    public function findByCredential($credential) {
-        $sql = "SELECT * FROM users WHERE username = :uname OR email_address = :email";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'uname' => $credential,
+    public function findByCredential($credential)
+    {
+        $sql = "SELECT * FROM users WHERE username = :username OR email_address = :email";
+        $params = [
+            'username' => $credential,
             'email' => $credential
-        ]);
-
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        ];
+        $statement = $this->run($sql, $params);
+        return $statement->fetch();
     }
 
     public function forcePasswordUpdate(int $userId, string $newPassword): bool {
@@ -139,5 +139,11 @@ class Users extends Model {
         ];
         $statement = $this->run($sql, $params);
         return $statement->rowCount() > 0;
+    }
+
+    public function findUserByUsernameAndEmail(string $username, string $email) {
+        $sql = "SELECT user_id FROM users WHERE username = :username AND email_address = :email";
+        $statement = $this->run($sql, ['username' => $username, 'email' => $email]);
+        return $statement->fetch();
     }
 }

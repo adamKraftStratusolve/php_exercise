@@ -1,141 +1,138 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const profileForm = document.getElementById('profile-form');
-    const welcomeMessage = document.getElementById('welcome-message');
-    const firstNameInput = document.getElementById('firstName');
-    const lastNameInput = document.getElementById('lastName');
-    const emailInput = document.getElementById('email');
-    const usernameInput = document.getElementById('username');
-    const currentPasswordInput = document.getElementById('currentPassword');
-    const newPasswordInput = document.getElementById('newPassword');
-    const messageDiv = document.getElementById('message-display');
-    const logoutLink = document.getElementById('logout-link');
-    const postsContainer = document.getElementById('user-posts-container');
-    const profilePicturePreview = document.getElementById('profile-picture-preview');
-    const pictureInput = document.getElementById('picture-input');
-    const savePictureBtn = document.getElementById('save-picture-btn');
-    const pictureMessage = document.getElementById('picture-message');
-    let selectedFile = null;
+class ProfilePage extends BasePage {
+    constructor() {
+        super();
+        this.firstNameInput = document.getElementById('firstName');
+        this.lastNameInput = document.getElementById('lastName');
+        this.emailInput = document.getElementById('email');
+        this.usernameInput = document.getElementById('username');
+        this.currentPasswordInput = document.getElementById('currentPassword');
+        this.newPasswordInput = document.getElementById('newPassword');
+        this.messageDiv = document.getElementById('messageDisplay');
+        this.postsContainer = document.getElementById('userPostsContainer');
+        this.profilePicturePreview = document.getElementById('profilePicturePreview');
+        this.pictureInput = document.getElementById('pictureInput');
+        this.savePictureBtn = document.getElementById('savePictureBtn');
+        this.pictureMessage = document.getElementById('pictureMessage');
+        this.selectedFile = null;
+    }
 
-    const renderPosts = (posts) => {
-        postsContainer.innerHTML = '';
+    init() {
+        super.init();
+        this._addPageEventListeners();
+    }
+
+    onProfileLoad(user) {
+        this.firstNameInput.value = user.firstName || '';
+        this.lastNameInput.value = user.lastName || '';
+        this.emailInput.value = user.emailAddress || '';
+        this.usernameInput.value = user.username || '';
+        this.profilePicturePreview.src = user.profileImageUrl || '/uploads/default-avatar.png';
+        this._fetchUserPosts();
+    }
+
+    _fetchUserPosts() {
+        apiService.get('/profile.php')
+            .then(data => this._renderPosts(data.posts));
+    }
+
+    _renderPosts(posts) {
+        this.postsContainer.innerHTML = '';
         if (!posts || posts.length === 0) {
-            postsContainer.innerHTML = '<p>You have not created any posts yet.</p>';
+            this.postsContainer.innerHTML = '<p>You have not created any posts yet.</p>';
             return;
         }
         posts.forEach(post => {
-            const postCard = createPostCard(post, { showDeleteButton: true });
-            postsContainer.appendChild(postCard);
+            const postCard = createPostCard(post);
+            this.postsContainer.appendChild(postCard);
         });
-    };
+    }
 
-    const fetchAndPopulateProfile = () => {
-        apiService.get('/profile.php')
-            .then(data => {
-                const user = data.profile;
-                firstNameInput.value = user.FirstName;
-                lastNameInput.value = user.LastName;
-                emailInput.value = user.EmailAddress;
-                usernameInput.value = user.Username;
-                welcomeMessage.textContent = `Welcome, ${user.FirstName}!`;
-                profilePicturePreview.src = data.profile.profile_image_url || '/Uploads/default-avatar.png';
-
-                renderPosts(data.posts);
-            })
-            .catch(error => {
-                if (error.message !== 'Redirecting to login.') {
-                    messageDiv.textContent = `Error loading profile: ${error.message}`;
-                    messageDiv.className = 'message error';
-                    messageDiv.style.display = 'block';
-                }
-            });
-    };
-
-    pictureInput.addEventListener('change', (event) => {
-        selectedFile = event.target.files[0];
-        if (selectedFile) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                profilePicturePreview.src = e.target.result;
-            };
-            reader.readAsDataURL(selectedFile);
-            savePictureBtn.style.display = 'inline-block';
-        }
-    });
-
-    savePictureBtn.addEventListener('click', () => {
-        if (!selectedFile) return;
-
-        const formData = new FormData();
-        formData.append('profile_picture', selectedFile);
-
-        apiService.post('/Services/upload_picture.php', formData)
-            .then(data => {
-                pictureMessage.textContent = 'Picture updated successfully!';
-                pictureMessage.className = 'message success';
-                pictureMessage.style.display = 'block';
-                savePictureBtn.style.display = 'none';
-                profilePicturePreview.src = data.imageUrl;
-            })
-            .catch(error => {
-                pictureMessage.textContent = error.message;
-                pictureMessage.className = 'message error';
-                pictureMessage.style.display = 'block';
-            });
-    });
-
-    handleFormSubmit('profile-form', '/Services/update_profile.php', {
-        messageId: 'message-display',
-        getFormData: (form) => {
-            const formData = new FormData(form);
-            if (!formData.get('new_password')) {
-                formData.delete('current_password');
+    _addPageEventListeners() {
+        this.pictureInput.addEventListener('change', (event) => {
+            this.selectedFile = event.target.files[0];
+            if (this.selectedFile) {
+                const reader = new FileReader();
+                reader.onload = (e) => { this.profilePicturePreview.src = e.target.result; };
+                reader.readAsDataURL(this.selectedFile);
+                this.savePictureBtn.style.display = 'inline-block';
             }
-            return formData;
-        },
-        onSuccess: (data) => {
-            messageDiv.textContent = data.message || 'Profile updated successfully!';
-            messageDiv.className = 'message success';
-            messageDiv.style.display = 'block';
-            currentPasswordInput.value = '';
-            newPasswordInput.value = '';
-        }
-    });
+        });
 
-    postsContainer.addEventListener('click', (event) => {
-        if (event.target.classList.contains('delete-btn')) {
-            const postCard = event.target.closest('.post-card');
-            const postId = postCard.getAttribute('data-post-id');
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#007bff',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const formData = new FormData();
-                    formData.append('post_id', postId);
-                    apiService.post('/Services/delete_post.php', formData)
-                        .then(() => {
-                            postCard.remove();
-                            Swal.fire('Deleted!', 'Your post has been deleted.', 'success');
-                        })
-                        .catch(error => {
-                            if (error.message !== 'Redirecting to login.') {
-                                Swal.fire('Error!', `Could not delete post: ${error.message}`, 'error');
-                            }
-                        });
+        this.savePictureBtn.addEventListener('click', () => {
+            if (!this.selectedFile) return;
+            const formData = new FormData();
+            formData.append('profilePicture', this.selectedFile);
+
+            apiService.post('/Services/upload_picture.php', formData)
+                .then(data => {
+                    this.pictureMessage.textContent = 'Picture updated successfully!';
+                    this.pictureMessage.className = 'message success';
+                    this.pictureMessage.style.display = 'block';
+                    this.savePictureBtn.style.display = 'none';
+                    this.profilePicturePreview.src = data.imageUrl;
+                })
+                .catch(error => {
+                    this.pictureMessage.textContent = error.message;
+                    this.pictureMessage.className = 'message error';
+                    this.pictureMessage.style.display = 'block';
+                });
+        });
+
+        handleFormSubmit('profileForm', '/Services/update_profile.php', {
+            messageId: 'messageDisplay',
+            getFormData: (form) => {
+                const formData = new FormData(form);
+                if (!formData.get('newPassword')) {
+                    formData.delete('currentPassword');
                 }
-            });
-        }
-    });
+                return formData;
+            },
+            onSuccess: (data) => {
+                this.messageDiv.textContent = data.message || 'Profile updated successfully!';
+                this.messageDiv.className = 'message success';
+                this.messageDiv.style.display = 'block';
+                this.currentPasswordInput.value = '';
+                this.newPasswordInput.value = '';
+            }
+        });
 
-    logoutLink.addEventListener('click', (event) => {
-        event.preventDefault();
-        apiService.post('/Services/logout.php', {}).then(() => window.location.href = 'login.html');
-    });
+        this.postsContainer.addEventListener('click', (event) => {
+            const deleteBtn = event.target.closest('.delete-btn');
+            if (deleteBtn) {
+                const postCard = deleteBtn.closest('.post-card');
+                const postId = postCard.getAttribute('data-post-id');
 
-    fetchAndPopulateProfile();
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#007bff',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const formData = new FormData();
+                        formData.append('postId', postId);
+
+                        apiService.post('/Services/delete_post.php', formData)
+                            .then(() => {
+                                postCard.remove();
+                                Swal.fire('Deleted!', 'Your post has been deleted.', 'success');
+                            })
+                            .catch(error => {
+                                if (error.message !== 'Redirecting to login.') {
+                                    Swal.fire('Error!', `Could not delete post: ${error.message}`, 'error');
+                                }
+                            });
+                    }
+                });
+            }
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const page = new ProfilePage();
+    page.init();
 });

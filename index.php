@@ -2,10 +2,10 @@
 require_once 'auth_check.php';
 require_once 'db_config.php';
 require_once './Model_Repositories/Posts.php';
+require_once './Services/api_helpers.php';
 
 $postsInstance = new Posts();
 
-$allPosts = $postsInstance->getAllPosts();
+$allPosts = $postsInstance->getAllPosts($_SESSION['user_id']);
 
-header('Content-Type: application/json');
-echo json_encode($allPosts);
+ApiResponse::sendJson($allPosts);

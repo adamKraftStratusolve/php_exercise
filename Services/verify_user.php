@@ -16,14 +16,9 @@ if (empty($username) || empty($email)) {
 }
 
 $userInstance = new Users();
-$pdo = Database::getConnection();
-
-$stmt = $pdo->prepare("SELECT user_id FROM users WHERE username = ? AND email_address = ?");
-$stmt->execute([$username, $email]);
-$user = $stmt->fetch();
+$user = $userInstance->findUserByUsernameAndEmail($username, $email);
 
 if ($user) {
-
     $_SESSION['password_reset_uid'] = $user['user_id'];
     $_SESSION['password_reset_expires'] = time() + 300;
     ApiResponse::success('User verified.');

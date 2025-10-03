@@ -6,10 +6,9 @@ require_once 'api_helpers.php';
 
 ApiResponse::requirePostMethod();
 
-if (isset($_FILES['profile_picture'])) {
-    $file = $_FILES['profile_picture'];
+if (isset($_FILES['profilePicture'])) {
+    $file = $_FILES['profilePicture'];
 
-    // Basic validation
     if ($file['error'] !== UPLOAD_ERR_OK) {
         ApiResponse::error('File upload error.');
     }
@@ -17,7 +16,7 @@ if (isset($_FILES['profile_picture'])) {
     if (!in_array($file['type'], $allowedTypes)) {
         ApiResponse::error('Invalid file type. Please upload a JPG, PNG, or GIF.');
     }
-    if ($file['size'] > 5000000) { // 5 MB limit
+    if ($file['size'] > 5000000) {
         ApiResponse::error('File is too large. Limit is 5MB.');
     }
 

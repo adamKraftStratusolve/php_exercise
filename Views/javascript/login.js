@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    handleFormSubmit('login-form', '/login.php', {
-        messageId: 'error-message',
+    handleFormSubmit('loginForm', '/login.php', {
+        messageId: 'errorMessage',
         onSuccess: () => {
             window.location.href = 'index.html';
         }

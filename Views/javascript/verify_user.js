@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    handleFormSubmit('verify-user-form', '/Services/verify_user.php', {
-        messageId: 'error-message',
+    handleFormSubmit('verifyUserForm', '/Services/verify_user.php', {
+        messageId: 'errorMessage',
         onSuccess: () => {
-            window.location.href = 'reset-password-form.html';
+            window.location.href = 'reset_password_form.html';
         }
     });
 });

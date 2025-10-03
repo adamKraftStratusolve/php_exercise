@@ -2,25 +2,19 @@
 require_once '../auth_check.php';
 require_once '../db_config.php';
 require_once '../Model_Repositories/Users.php';
+require_once 'api_helpers.php';
 
-header('Content-Type: application/json');
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['error' => 'Only POST method is accepted.']);
-    exit();
-}
+ApiResponse::requirePostMethod();
 
 $userId = $_SESSION['user_id'];
 
 $data = [
-    'user_id' => $userId,
-    'first_name' => $_POST['first_name'] ?? '',
-    'last_name' => $_POST['last_name'] ?? '',
+    'userId' => $userId,
+    'firstName' => $_POST['firstName'] ?? '',
+    'lastName' => $_POST['lastName'] ?? '',
     'email' => $_POST['email'] ?? '',
-    'username' => $_POST['username'] ?? '',
-    'current_password' => $_POST['current_password'] ?? null,
-    'new_password' => $_POST['new_password'] ?? null
+    'currentPassword' => $_POST['currentPassword'] ?? null,
+    'newPassword' => $_POST['newPassword'] ?? null
 ];
 
 try {
@@ -28,12 +22,10 @@ try {
     $result = $userInstance->updateProfile($data);
 
     if ($result['success']) {
-        echo json_encode(['success' => true, 'message' => $result['message']]);
+        ApiResponse::sendJson(['success' => true, 'message' => $result['message']]);
     } else {
-        http_response_code(400);
-        echo json_encode(['error' => $result['message']]);
+        ApiResponse::error($result['message']);
     }
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'An error occurred while updating the profile.']);
+    ApiResponse::error('An error occurred while updating the profile.', 500);
 }

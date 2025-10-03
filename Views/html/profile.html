@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Profile - ConnectSphere</title>
-
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/profile.css">
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-
 </head>
 <body>
 <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+        <img src="../logo.svg" alt="ConnectSphere Logo" class="logo">
+        <span>ConnectSphere</span>
+    </a>
     <div class="nav-links">
-        <span id="welcome-message">Welcome!</span>
-        <a href="index.html">Home</a>
-        <a href="#" id="logout-link">Logout</a>
+        <span id="welcomeMessage">Welcome!</span>
+        <a href="profile.html">Profile</a>
+        <a href="#" id="logoutLink">Logout</a>
     </div>
 </nav>
 
@@ -24,65 +24,57 @@
     <div class="card">
         <h2>Your Display Picture</h2>
         <div class="profile-picture-container">
-            <img id="profile-picture-preview" src="/Uploads/default-avatar.png" alt="Your profile picture">
+            <img id="profilePicturePreview" src="/uploads/default-avatar.png" alt="Your profile picture">
         </div>
-        <input type="file" id="picture-input" accept="image/jpeg, image/png, image/gif" style="display: none;">
-        <button onclick="document.getElementById('picture-input').click();" class="btn btn-outline">Choose Image</button>
-        <button id="save-picture-btn" class="btn btn-primary" style="display: none;">Save Picture</button>
-        <div id="picture-message" class="message" style="display: none;"></div>
+        <input type="file" id="pictureInput" accept="image/jpeg, image/png, image/gif" style="display: none;">
+        <button onclick="document.getElementById('pictureInput').click();" class="btn btn-outline">Choose Image</button>
+        <button id="savePictureBtn" class="btn btn-primary" style="display: none;">Save Picture</button>
+        <div id="pictureMessage" class="message" style="display: none;"></div>
     </div>
     <div class="card">
         <h2>Your Profile</h2>
-        <p class="profile-subtitle">View and update your personal information.</p>
-
-        <form id="profile-form">
-            <div id="message-display" class="message"></div>
-
+        <form id="profileForm">
+            <div id="messageDisplay" class="message"></div>
             <div class="form-group">
                 <label for="firstName">First Name</label>
-                <input type="text" id="firstName">
+                <input type="text" id="firstName" name="firstName">
             </div>
             <div class="form-group">
                 <label for="lastName">Last Name</label>
-                <input type="text" id="lastName">
+                <input type="text" id="lastName" name="lastName">
             </div>
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" id="email">
+                <input type="email" id="email" name="email">
             </div>
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" id="username">
+                <input type="text" id="username" name="username" disabled>
             </div>
-
-            <hr class="profile-separator">
-
+            <hr>
             <h3>Change Password</h3>
-            <p class="profile-subtitle">Leave blank to keep your current password.</p>
             <div class="form-group">
                 <label for="currentPassword">Current Password</label>
-                <input type="password" id="currentPassword">
+                <input type="password" id="currentPassword" name="currentPassword">
             </div>
             <div class="form-group">
                 <label for="newPassword">New Password</label>
-                <input type="password" id="newPassword">
+                <input type="password" id="newPassword" name="newPassword">
             </div>
-
             <button type="submit" class="btn btn-primary">Update Profile</button>
         </form>
     </div>
-
     <div class="card">
         <h2>Your Posts</h2>
-        <div id="user-posts-container">
-        </div>
+        <div id="userPostsContainer"></div>
     </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="../javascript/apiservice.js"></script>
-<script src="../javascript/profile.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
-
+<script src="../javascript/apiservice.js"></script>
+<script src="../javascript/utils.js"></script>
+<script src="../javascript/BasePage.js"></script>
+<script src="../javascript/profile.js"></script>
 </body>
 </html>
