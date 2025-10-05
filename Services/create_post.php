@@ -6,7 +6,7 @@ require_once 'api_helpers.php';
 
 ApiResponse::requirePostMethod();
 
-if (empty($_POST['post_text'])) {
+if (empty($_POST['postText'])) {
     ApiResponse::error('Post text cannot be empty.');
 }
 

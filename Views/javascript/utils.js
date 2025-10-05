@@ -32,34 +32,40 @@ function handleFormSubmit(formId, apiEndpoint, options = {}) {
     });
 }
 
-
 function createPostCard(post, options = {}) {
     const postCard = document.createElement('div');
     postCard.className = 'card post-card';
     postCard.setAttribute('data-post-id', post.postId);
 
-    const avatarUrl = post.profileImageUrl || '/uploads/default-avatar.png';
+    const avatarUrl = (post.profileImageUrl && post.profileImageUrl.trim() !== '')
+        ? post.profileImageUrl
+        : '/uploads/default-avatar.png';
+
     const avatarHTML = `<div class="post-avatar"><img src="${avatarUrl}" alt="${post.username}'s avatar"></div>`;
 
     const likedClass = post.userHasLiked ? 'liked' : '';
     const actionsHTML = `
         <div class="post-actions">
             <button class="btn like-btn ${likedClass}">
-                ? <span class="like-count">${post.likeCount || 0}</span>
+                <i class="fas fa-heart"></i> <span class="like-count">${post.likeCount || 0}</span>
             </button>
         </div>`;
 
     let commentsHTML = '<div class="comments-list"></div>';
     if (post.comments && post.comments.length > 0) {
-        const comments = post.comments.map(comment => `
+        const comments = post.comments.map(comment => {
+            const commentAvatarUrl = (comment.profileImageUrl && comment.profileImageUrl.trim() !== '')
+                ? comment.profileImageUrl
+                : '/uploads/default-avatar.png';
+            return `
             <div class="comment">
-                <img src="${comment.profileImageUrl || '/uploads/default-avatar.png'}" alt="${comment.username}'s avatar" class="comment-avatar">
+                <img src="${commentAvatarUrl}" alt="${comment.username}'s avatar" class="comment-avatar">
                 <div class="comment-body">
                     <strong>${comment.username}</strong>
                     <p>${comment.commentText}</p>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
         commentsHTML = `<div class="comments-list">${comments}</div>`;
     }
 

@@ -401,3 +401,7 @@ a:hover {
 .modal-footer .btn-outline:hover {
     background: var(--background-grey);
 }
+
+.fas, .far, .fab, .fa-solid {
+    font-family: "Font Awesome 6 Free" !important;
+}

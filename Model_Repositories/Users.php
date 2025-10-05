@@ -2,41 +2,49 @@
 require_once 'Base_Model.php';
 
 class Users extends Model {
-    public $PersonId;
-    public $FirstName;
-    public $LastName;
-    public $EmailAddress;
-    public $Username;
-    public $Password;
+    public $personId;
+    public $firstName;
+    public $lastName;
+    public $emailAddress;
+    public $username;
+    public $password;
+    public $profileImageUrl;
 
     protected $map = [
-        'user_id' => 'PersonId',
-        'first_name' => 'FirstName',
-        'last_name' => 'LastName',
-        'email_address' => 'EmailAddress',
-        'username' => 'Username',
-        'password' => 'Password'
+        'user_id' => 'personId',
+        'first_name' => 'firstName',
+        'last_name' => 'lastName',
+        'email_address' => 'emailAddress',
+        'username' => 'username',
+        'password' => 'password',
+        'profile_image_url' => 'profileImageUrl'
     ];
 
     public function findById() {
         $sql = "SELECT * FROM users WHERE user_id = :user_id";
-        $statement = $this->run($sql, ['user_id' => $this->PersonId]);
+        $statement = $this->run($sql, ['user_id' => $this->personId]);
         $data = $statement->fetch();
+
         if ($data) {
             $this->mapData($data);
+            if ($this->profileImageUrl === '') {
+                $this->profileImageUrl = null;
+            }
+
             return $this;
         }
+
         return false;
     }
 
     public function createUser() {
-        $hashedPassword = password_hash($this->Password, PASSWORD_DEFAULT);
+        $hashedPassword = password_hash($this->password, PASSWORD_DEFAULT);
         $sql = "INSERT INTO users (first_name, last_name, email_address, username, password) VALUES (:first_name, :last_name, :email_address, :username, :password)";
         $params = [
-            'first_name' => $this->FirstName,
-            'last_name' => $this->LastName,
-            'email_address' => $this->EmailAddress,
-            'username' => $this->Username,
+            'first_name' => $this->firstName,
+            'last_name' => $this->lastName,
+            'email_address' => $this->emailAddress,
+            'username' => $this->username,
             'password' => $hashedPassword
         ];
         $statement = $this->run($sql, $params);
@@ -47,11 +55,11 @@ class Users extends Model {
         $sql = "UPDATE users SET first_name = :first_name, last_name = :last_name, email_address = :email_address, username = :username WHERE user_id = :user_id";
 
         $params = [
-            'first_name' => $this->FirstName,
-            'last_name' => $this->LastName,
-            'email_address' => $this->EmailAddress,
-            'username' => $this->Username,
-            'user_id' => $this->PersonId
+            'first_name' => $this->firstName,
+            'last_name' => $this->lastName,
+            'email_address' => $this->emailAddress,
+            'username' => $this->username,
+            'user_id' => $this->personId
         ];
 
         $statement = $this->run($sql, $params);
@@ -59,15 +67,14 @@ class Users extends Model {
     }
 
     public function updatePassword($currentPassword, $newPassword) {
-        $user_data = $this->run("SELECT password FROM users WHERE user_id = :user_id", ['user_id' => $this->PersonId])->fetch();
+        $user_data = $this->run("SELECT password FROM users WHERE user_id = :user_id", ['user_id' => $this->personId])->fetch();
 
         if ($user_data && password_verify($currentPassword, $user_data['password'])) {
-
             $newHashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
             $sql = "UPDATE users SET password = :password WHERE user_id = :user_id";
             $params = [
                 'password' => $newHashedPassword,
-                'user_id' => $this->PersonId
+                'user_id' => $this->personId
             ];
             $statement = $this->run($sql, $params);
             return $statement->rowCount() > 0;
@@ -77,12 +84,11 @@ class Users extends Model {
     }
 
     public function updateProfile($data) {
-
-        $this->PersonId = $data['user_id'];
-        $this->FirstName = $data['first_name'];
-        $this->LastName = $data['last_name'];
-        $this->EmailAddress = $data['email'];
-        $this->Username = $data['username'];
+        $this->personId = $data['user_id'];
+        $this->firstName = $data['first_name'];
+        $this->lastName = $data['last_name'];
+        $this->emailAddress = $data['email'];
+        $this->username = $data['username'];
 
         $detailsUpdated = $this->updateUser();
 

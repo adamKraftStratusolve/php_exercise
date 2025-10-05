@@ -12,8 +12,8 @@ class IndexPage extends BasePage {
     init() {
         super.init();
         this._addPageEventListeners();
-        this._fetchAndRenderPosts();
-        setInterval(() => this._fetchAndRenderPosts(), 2000);
+        this._fetchAllPosts();
+        setInterval(() => this._fetchLatestPosts(), 5000);
     }
 
     onProfileLoad(user) {
@@ -22,19 +22,39 @@ class IndexPage extends BasePage {
         }
     }
 
-    _fetchAndRenderPosts() {
+    _fetchAllPosts() {
         apiService.get('/index.php')
             .then(posts => {
                 this.postsContainer.innerHTML = '';
-                posts.forEach(post => {
-                    const postCard = createPostCard(post);
-                    this.postsContainer.append(postCard);
-                });
+                if (Array.isArray(posts)) {
+                    posts.forEach(post => {
+                        const postCard = createPostCard(post);
+                        this.postsContainer.append(postCard);
+                    });
+                }
             })
             .catch(error => {
                 if (error.message !== 'Redirecting to login.' && this.postsContainer) {
                     this.postsContainer.innerHTML = `<p class="error">Could not load posts. ${error.message}</p>`;
                 }
+            });
+    }
+
+    _fetchLatestPosts() {
+        const firstPost = this.postsContainer.querySelector('.post-card');
+        const latestId = firstPost ? firstPost.dataset.postId : 0;
+
+        apiService.get(`/index.php?sinceId=${latestId}`)
+            .then(newPosts => {
+                if (Array.isArray(newPosts) && newPosts.length > 0) {
+                    newPosts.reverse().forEach(post => {
+                        const postCard = createPostCard(post);
+                        this.postsContainer.prepend(postCard);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching latest posts:", error);
             });
     }
 
@@ -48,7 +68,7 @@ class IndexPage extends BasePage {
             onSuccess: () => {
                 this.postModal.style.display = 'none';
                 this.postTextarea.value = '';
-                this._fetchAndRenderPosts();
+                this._fetchLatestPosts();
             },
         });
 
@@ -85,8 +105,9 @@ class IndexPage extends BasePage {
             apiService.post('/Services/post_comment.php', formData)
                 .then(() => {
                     commentInput.value = '';
+                    this._fetchAllPosts();
                 })
-                .catch(error => alert('Could not post comment.'))
+                .catch(error => alert('Could not post comment: ' + error.message))
                 .finally(() => {
                     commentInput.disabled = false;
                 });

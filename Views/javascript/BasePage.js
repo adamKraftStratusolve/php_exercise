@@ -24,17 +24,25 @@ class BasePage {
     _fetchUserProfile() {
         apiService.get('/profile.php')
             .then(data => {
-                const user = data.profile;
-                if (this.welcomeMessage && user.firstName) {
-                    this.welcomeMessage.textContent = `Welcome, ${user.firstName}!`;
-                }
-                this.onProfileLoad(user);
+                this.onPageLoad(data);
             })
             .catch(error => {
                 if (error.message !== 'Redirecting to login.') {
                     console.error("Could not fetch user profile:", error);
                 }
             });
+    }
+
+    onPageLoad(data) {
+        const user = data.profile;
+        if (user) {
+            if (this.welcomeMessage && user.firstName) {
+                this.welcomeMessage.textContent = `Welcome, ${user.firstName}!`;
+            }
+            this.onProfileLoad(user);
+        } else {
+            console.error("User profile data is missing in API response.", data);
+        }
     }
 
     onProfileLoad(user) {

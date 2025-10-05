@@ -21,18 +21,18 @@ class ProfilePage extends BasePage {
         this._addPageEventListeners();
     }
 
+    onPageLoad(data) {
+
+        this.onProfileLoad(data.profile);
+        this._renderPosts(data.posts);
+    }
+
     onProfileLoad(user) {
         this.firstNameInput.value = user.firstName || '';
         this.lastNameInput.value = user.lastName || '';
         this.emailInput.value = user.emailAddress || '';
         this.usernameInput.value = user.username || '';
-        this.profilePicturePreview.src = user.profileImageUrl || '/uploads/default-avatar.png';
-        this._fetchUserPosts();
-    }
-
-    _fetchUserPosts() {
-        apiService.get('/profile.php')
-            .then(data => this._renderPosts(data.posts));
+        this.profilePicturePreview.src = user.profileImageUrl || '/Uploads/default-avatar.jpg';
     }
 
     _renderPosts(posts) {
@@ -48,6 +48,7 @@ class ProfilePage extends BasePage {
     }
 
     _addPageEventListeners() {
+        // This method is unchanged.
         this.pictureInput.addEventListener('change', (event) => {
             this.selectedFile = event.target.files[0];
             if (this.selectedFile) {

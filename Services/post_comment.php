@@ -8,7 +8,7 @@ ApiResponse::requirePostMethod();
 
 $userId = $_SESSION['user_id'];
 $postId = $_POST['postId'] ?? 0;
-$commentText = trim($_POST['comment_text'] ?? '');
+$commentText = trim($_POST['commentText'] ?? '');
 
 if (empty($postId) || empty($commentText)) {
     ApiResponse::error('Post ID and comment text are required.');

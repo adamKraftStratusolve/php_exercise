@@ -6,11 +6,13 @@ require_once './Model_Repositories/Posts.php';
 require_once './Services/api_helpers.php';
 
 $user = new Users();
-$user->PersonId = $_SESSION['user_id'];
+
+$user->personId = $_SESSION['user_id'];
 $currentUser = $user->findById();
 
 $postsInstance = new Posts();
-$userPosts = $postsInstance->getPostsByUserId($_SESSION['user_id']);
+
+$userPosts = $postsInstance->getPostsByUserId($_SESSION['user_id'], $_SESSION['user_id']);
 
 $response_data = [
     'profile' => $currentUser,

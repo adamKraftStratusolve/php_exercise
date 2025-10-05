@@ -26,73 +26,94 @@ class Posts extends Model {
         return $statement->rowCount() > 0;
     }
 
-    public function getAllPosts(int $currentUserId): array {
+    public function getAllPosts(int $currentUserId, int $sinceId = 0) {
 
         $sql = "SELECT
-                p.post_id AS PostID,
-                p.post_text AS PostText,
-                p.post_timestamp AS CreatedAt,
-                u.username AS Username,
-                u.first_name AS FirstName,
-                u.last_name AS LastName,
-                u.profile_image_url,
-                (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS like_count,
-                (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id AND user_id = :current_user_id) AS user_has_liked
-            FROM
-                posts p
-            JOIN
-                users u ON p.user_id = u.user_id
-            ORDER BY
-                p.post_timestamp DESC;";
+            p.post_id AS postId,
+            p.post_text AS postText,
+            p.post_timestamp AS createdAt,
+            u.username,
+            u.first_name AS firstName,
+            u.last_name AS lastName,
+            u.profile_image_url AS profileImageUrl,
+            (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS likeCount,
+            (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id AND user_id = :current_user_id) AS userHasLiked
+        FROM
+            posts p
+        JOIN
+            users u ON p.user_id = u.user_id";
 
-        $stmt = $this->run($sql, ['current_user_id' => $currentUserId]);
+        $params = ['current_user_id' => $currentUserId];
+
+        if ($sinceId > 0) {
+            $sql .= " WHERE p.post_id > :since_id";
+            $params['since_id'] = $sinceId;
+        }
+
+        $sql .= " ORDER BY p.post_timestamp DESC;";
+
+        $stmt = $this->run($sql, $params);
         $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         if (empty($posts)) {
             return [];
         }
 
-        $postIds = array_column($posts, 'PostID');
+        $postIds = array_column($posts, 'postId');
         $placeholders = implode(',', array_fill(0, count($postIds), '?'));
 
-        $commentSql = "SELECT 
-                        c.post_id, c.comment_text, c.comment_timestamp, 
-                        u.username, u.profile_image_url 
-                       FROM comments c 
-                       JOIN users u ON c.user_id = u.user_id 
-                       WHERE c.post_id IN ($placeholders) 
-                       ORDER BY c.comment_timestamp ASC";
+        $commentSql = "SELECT
+                    c.post_id AS postId,
+                    c.comment_text AS commentText,
+                    c.comment_timestamp AS commentTimestamp,
+                    u.username,
+                    u.profile_image_url AS profileImageUrl
+                   FROM comments c
+                   JOIN users u ON c.user_id = u.user_id
+                   WHERE c.post_id IN ($placeholders)
+                   ORDER BY c.comment_timestamp ASC";
+
         $commentStmt = $this->run($commentSql, $postIds);
         $comments = $commentStmt->fetchAll(PDO::FETCH_ASSOC);
 
         $commentsByPostId = [];
         foreach ($comments as $comment) {
-            $commentsByPostId[$comment['post_id']][] = $comment;
+            $commentsByPostId[$comment['postId']][] = $comment;
         }
 
         foreach ($posts as $key => $post) {
-            $posts[$key]['comments'] = $commentsByPostId[$post['PostID']] ?? [];
+            $posts[$key]['comments'] = $commentsByPostId[$post['postId']] ?? [];
         }
 
         return $posts;
     }
+    public function getPostsByUserId(int $profileUserId, int $currentUserId): array {
 
-    public function getPostsByUserId(int $userId): array {
-        $sql = "SELECT 
-                p.post_id AS PostID,
-                p.post_text AS PostText,
-                p.post_timestamp AS CreatedAt,
-                u.username AS Username 
-            FROM 
-                posts p
-            JOIN 
-                users u ON p.user_id = u.user_id
-            WHERE 
-                p.user_id = :user_id 
-            ORDER BY 
-                p.post_timestamp DESC";
+        $sql = "SELECT
+            p.post_id AS postId,
+            p.post_text AS postText,
+            p.post_timestamp AS createdAt,
+            u.username,
+            u.first_name AS firstName,
+            u.last_name AS lastName,
+            u.profile_image_url AS profileImageUrl,
+            (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS likeCount,
+            (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id AND user_id = :current_user_id) AS userHasLiked
+        FROM
+            posts p
+        JOIN
+            users u ON p.user_id = u.user_id
+        WHERE
+            p.user_id = :profile_user_id
+        ORDER BY
+            p.post_timestamp DESC";
 
-        $statement = $this->run($sql, ['user_id' => $userId]);
+        $params = [
+            'profile_user_id' => $profileUserId,
+            'current_user_id' => $currentUserId
+        ];
+
+        $statement = $this->run($sql, $params);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
