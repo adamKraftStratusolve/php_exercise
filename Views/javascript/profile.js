@@ -48,7 +48,7 @@ class ProfilePage extends BasePage {
     }
 
     _addPageEventListeners() {
-        // This method is unchanged.
+
         this.pictureInput.addEventListener('change', (event) => {
             this.selectedFile = event.target.files[0];
             if (this.selectedFile) {

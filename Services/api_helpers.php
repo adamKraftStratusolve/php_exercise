@@ -27,7 +27,6 @@ function convertKeysToCamelCase($array) {
     foreach ($array as $key => $value) {
 
         $newKey = lcfirst(str_replace('_', '', ucwords($key, '_')));
-        // Recursively convert keys in nested arrays
         if (is_array($value)) {
             $value = array_map('convertKeysToCamelCase', $value);
         }
