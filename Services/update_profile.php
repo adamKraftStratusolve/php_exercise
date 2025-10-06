@@ -13,6 +13,7 @@ $data = [
     'firstName' => $_POST['firstName'] ?? '',
     'lastName' => $_POST['lastName'] ?? '',
     'email' => $_POST['email'] ?? '',
+    'username' => $_POST['username'] ?? '',
     'currentPassword' => $_POST['currentPassword'] ?? null,
     'newPassword' => $_POST['newPassword'] ?? null
 ];

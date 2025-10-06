@@ -84,27 +84,27 @@ class Users extends Model {
     }
 
     public function updateProfile($data) {
-        $this->personId = $data['user_id'];
-        $this->firstName = $data['first_name'];
-        $this->lastName = $data['last_name'];
+
+        $this->personId = $data['userId'];
+        $this->firstName = $data['firstName'];
+        $this->lastName = $data['lastName'];
         $this->emailAddress = $data['email'];
         $this->username = $data['username'];
 
         $detailsUpdated = $this->updateUser();
 
         $passwordMessage = '';
-        if (!empty($data['new_password'])) {
-            if (empty($data['current_password'])) {
+        if (!empty($data['newPassword'])) {
+            if (empty($data['currentPassword'])) {
                 return ['success' => false, 'message' => 'Current password is required to set a new one.'];
             }
 
-            $passwordUpdated = $this->updatePassword($data['current_password'], $data['new_password']);
+            $passwordUpdated = $this->updatePassword($data['currentPassword'], $data['newPassword']);
 
             if ($passwordUpdated) {
                 $passwordMessage = ' Password was also updated.';
             } else {
-                $message = 'Current password was incorrect. Profile details were saved, but the password was not changed.';
-                return ['success' => false, 'message' => $message];
+                return ['success' => false, 'message' => 'Current password was incorrect. Profile details were saved, but the password was not changed.'];
             }
         }
 
