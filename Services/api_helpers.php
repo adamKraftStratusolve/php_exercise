@@ -1,6 +1,11 @@
 <?php
+require_once __DIR__ . '/cors_config.php';
 class ApiResponse {
     public static function sendJson($data, $statusCode = 200) {
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
         header('Content-Type: application/json');
         http_response_code($statusCode);
         echo json_encode($data);
@@ -20,17 +25,4 @@ class ApiResponse {
             self::error('Only POST method is accepted.', 405);
         }
     }
-}
-
-function convertKeysToCamelCase($array) {
-    $result = [];
-    foreach ($array as $key => $value) {
-
-        $newKey = lcfirst(str_replace('_', '', ucwords($key, '_')));
-        if (is_array($value)) {
-            $value = array_map('convertKeysToCamelCase', $value);
-        }
-        $result[$newKey] = $value;
-    }
-    return $result;
 }

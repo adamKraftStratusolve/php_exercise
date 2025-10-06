@@ -141,4 +141,60 @@ class Posts extends Model {
             $this->run("INSERT INTO post_likes (user_id, post_id) VALUES (:user_id, :post_id)", ['user_id' => $userId, 'post_id' => $postId]);
         }
     }
+
+    public function getPostUpdates(array $postIds, int $currentUserId): array {
+        if (empty($postIds)) {
+            return [];
+        }
+
+        $updates = [];
+        $placeholders = implode(',', array_fill(0, count($postIds), '?'));
+
+        $likeSql = "SELECT
+                    p.post_id,
+                    COUNT(l.user_id) AS likeCount,
+                    MAX(CASE WHEN l.user_id = ? THEN 1 ELSE 0 END) AS userHasLiked
+                FROM posts p
+                LEFT JOIN post_likes l ON p.post_id = l.post_id
+                WHERE p.post_id IN ($placeholders)
+                GROUP BY p.post_id";
+
+        $likeParams = array_merge([$currentUserId], $postIds);
+        $likeStmt = $this->run($likeSql, $likeParams);
+        $likeResults = $likeStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($likeResults as $row) {
+            $updates[$row['post_id']] = [
+                'likeCount' => $row['likeCount'],
+                'userHasLiked' => (bool)$row['userHasLiked']
+            ];
+        }
+
+        $commentSql = "SELECT
+                    c.post_id AS postId,
+                    c.comment_text AS commentText,
+                    c.comment_timestamp AS commentTimestamp,
+                    u.username,
+                    u.profile_image_url AS profileImageUrl
+                   FROM comments c
+                   JOIN users u ON c.user_id = u.user_id
+                   WHERE c.post_id IN ($placeholders)
+                   ORDER BY c.comment_timestamp ASC";
+        $commentStmt = $this->run($commentSql, $postIds);
+        $comments = $commentStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $commentsByPostId = [];
+        foreach ($comments as $comment) {
+            $commentsByPostId[$comment['postId']][] = $comment;
+        }
+
+        foreach ($postIds as $postId) {
+            if (!isset($updates[$postId])) {
+                $updates[$postId] = [];
+            }
+            $updates[$postId]['comments'] = $commentsByPostId[$postId] ?? [];
+        }
+
+        return $updates;
+    }
 }

@@ -48,7 +48,11 @@ class Users extends Model {
             'password' => $hashedPassword
         ];
         $statement = $this->run($sql, $params);
-        return $statement->rowCount() > 0;
+
+        if ($statement->rowCount() > 0) {
+            return $this->pdo->lastInsertId();
+        }
+        return false;
     }
 
     public function updateUser() {
@@ -86,6 +90,25 @@ class Users extends Model {
     public function updateProfile($data) {
 
         $this->personId = $data['userId'];
+        $this->findById();
+        $currentUsername = $this->username;
+        $currentEmail = $this->emailAddress;
+
+        if ($currentEmail !== $data['email']) {
+            if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                return ['success' => false, 'message' => 'Please provide a valid email address.'];
+            }
+            if ($this->isEmailTakenByAnother($data['email'], $data['userId'])) {
+                return ['success' => false, 'message' => 'That email address is already in use.'];
+            }
+        }
+
+        if ($currentUsername !== $data['username']) {
+            if ($this->isUsernameTakenByAnother($data['username'], $data['userId'])) {
+                return ['success' => false, 'message' => 'That username is already taken.'];
+            }
+        }
+
         $this->firstName = $data['firstName'];
         $this->lastName = $data['lastName'];
         $this->emailAddress = $data['email'];
@@ -95,12 +118,16 @@ class Users extends Model {
 
         $passwordMessage = '';
         if (!empty($data['newPassword'])) {
+
+            $passwordError = $this->validatePassword($data['newPassword']);
+            if ($passwordError) {
+                return ['success' => false, 'message' => $passwordError];
+            }
+
             if (empty($data['currentPassword'])) {
                 return ['success' => false, 'message' => 'Current password is required to set a new one.'];
             }
-
             $passwordUpdated = $this->updatePassword($data['currentPassword'], $data['newPassword']);
-
             if ($passwordUpdated) {
                 $passwordMessage = ' Password was also updated.';
             } else {
@@ -151,5 +178,36 @@ class Users extends Model {
         $sql = "SELECT user_id FROM users WHERE username = :username AND email_address = :email";
         $statement = $this->run($sql, ['username' => $username, 'email' => $email]);
         return $statement->fetch();
+    }
+
+    public function isUsernameTakenByAnother(string $username, int $userId) {
+        $sql = "SELECT COUNT(*) FROM users WHERE username = :username AND user_id != :user_id";
+        $statement = $this->run($sql, ['username' => $username, 'user_id' => $userId]);
+        return $statement->fetchColumn() > 0;
+    }
+
+    public function isEmailTakenByAnother(string $email, int $userId) {
+        $sql = "SELECT COUNT(*) FROM users WHERE email_address = :email AND user_id != :user_id";
+        $statement = $this->run($sql, ['email' => $email, 'user_id' => $userId]);
+        return $statement->fetchColumn() > 0;
+    }
+
+    public function validatePassword(string $password): ?string {
+        if (strlen($password) < 8) {
+            return "Password must be at least 8 characters long.";
+        }
+        if (!preg_match('/[A-Z]/', $password)) {
+            return "Password must contain at least one uppercase letter.";
+        }
+        if (!preg_match('/[a-z]/', $password)) {
+            return "Password must contain at least one lowercase letter.";
+        }
+        if (!preg_match('/[0-9]/', $password)) {
+            return "Password must contain at least one number.";
+        }
+        if (!preg_match('/[\'^?$%&*()}{@#~?><>,|=_+?-]/', $password)) {
+            return "Password must contain at least one special character.";
+        }
+        return null;
     }
 }

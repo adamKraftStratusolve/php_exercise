@@ -50,13 +50,27 @@ class ProfilePage extends BasePage {
     _addPageEventListeners() {
 
         this.pictureInput.addEventListener('change', (event) => {
-            this.selectedFile = event.target.files[0];
-            if (this.selectedFile) {
-                const reader = new FileReader();
-                reader.onload = (e) => { this.profilePicturePreview.src = e.target.result; };
-                reader.readAsDataURL(this.selectedFile);
-                this.savePictureBtn.style.display = 'inline-block';
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+
+            if (file.size > MAX_FILE_SIZE) {
+                this.pictureMessage.textContent = 'File is too large. Please select an image smaller than 2MB.';
+                this.pictureMessage.className = 'message error';
+                this.pictureMessage.style.display = 'block';
+                this.savePictureBtn.style.display = 'none';
+                this.pictureInput.value = '';
+                this.selectedFile = null;
+                return;
             }
+
+            this.selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => { this.profilePicturePreview.src = e.target.result; };
+            reader.readAsDataURL(this.selectedFile);
+            this.savePictureBtn.style.display = 'inline-block';
+            this.pictureMessage.style.display = 'none'; // Hide any previous messages
         });
 
         this.savePictureBtn.addEventListener('click', () => {
@@ -64,9 +78,10 @@ class ProfilePage extends BasePage {
             const formData = new FormData();
             formData.append('profilePicture', this.selectedFile);
 
-            apiService.post('/Services/upload_picture.php', formData)
+            apiService.post('../../Services/upload_picture.php', formData)
                 .then(data => {
-                    this.pictureMessage.textContent = 'Picture updated successfully!';
+
+                    this.pictureMessage.textContent = 'Picture updated successfully! Image was converted to JPG format.';
                     this.pictureMessage.className = 'message success';
                     this.pictureMessage.style.display = 'block';
                     this.savePictureBtn.style.display = 'none';

@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         onSuccess: (data) => {
             if (messageDiv) {
-                messageDiv.textContent = data.success + ' Redirecting to login...';
+                messageDiv.textContent = data.success + ' Redirecting to the main feed...';
                 messageDiv.className = 'message success';
                 messageDiv.style.display = 'block';
             }
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 signupForm.reset();
             }
             setTimeout(() => {
-                window.location.href = 'login.html';
+                window.location.href = 'index.html';
             }, 2000);
         }
     });

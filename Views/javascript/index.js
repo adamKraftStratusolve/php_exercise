@@ -12,8 +12,10 @@ class IndexPage extends BasePage {
     init() {
         super.init();
         this._addPageEventListeners();
+
         this._fetchAllPosts();
-        setInterval(() => this._fetchLatestPosts(), 5000);
+
+        setInterval(() => this._syncFeed(), 10000);
     }
 
     onProfileLoad(user) {
@@ -40,22 +42,59 @@ class IndexPage extends BasePage {
             });
     }
 
-    _fetchLatestPosts() {
-        const firstPost = this.postsContainer.querySelector('.post-card');
-        const latestId = firstPost ? firstPost.dataset.postId : 0;
+    _syncFeed() {
+        const postElements = this.postsContainer.querySelectorAll('.post-card');
+        const existingIds = Array.from(postElements).map(post => post.dataset.postId);
+        const latestId = existingIds.length > 0 ? existingIds[0] : 0; // The first post is the newest
 
-        apiService.get(`/index.php?sinceId=${latestId}`)
-            .then(newPosts => {
+        apiService.post('/Services/sync_feed.php', { sinceId: latestId, existingIds: existingIds })
+            .then(data => {
+
+                const newPosts = data.newPosts;
                 if (Array.isArray(newPosts) && newPosts.length > 0) {
                     newPosts.reverse().forEach(post => {
                         const postCard = createPostCard(post);
                         this.postsContainer.prepend(postCard);
                     });
                 }
+
+                const updates = data.updates;
+                for (const postId in updates) {
+                    const postData = updates[postId];
+                    const postCard = this.postsContainer.querySelector(`.post-card[data-post-id="${postId}"]`);
+
+                    if (postCard) {
+                        // Update Like Button
+                        const likeBtn = postCard.querySelector('.like-btn');
+                        const likeCountSpan = postCard.querySelector('.like-count');
+                        if (likeBtn && likeCountSpan) {
+                            likeCountSpan.textContent = postData.likeCount || 0;
+                            postData.userHasLiked ? likeBtn.classList.add('liked') : likeBtn.classList.remove('liked');
+                        }
+
+                        // Update Comments Section
+                        const commentsList = postCard.querySelector('.comments-list');
+                        if (commentsList) {
+                            let commentsHTML = '';
+                            if (postData.comments && postData.comments.length > 0) {
+                                commentsHTML = postData.comments.map(comment => {
+                                    const cAvatarUrl = (comment.profileImageUrl && comment.profileImageUrl.trim() !== '') ? comment.profileImageUrl : '/Uploads/default-avatar.jpg';
+                                    return `
+                                    <div class="comment">
+                                        <img src="${cAvatarUrl}" alt="${comment.username}'s avatar" class="comment-avatar">
+                                        <div class="comment-body">
+                                            <strong>${comment.username}</strong>
+                                            <p>${comment.commentText}</p>
+                                        </div>
+                                    </div>`;
+                                }).join('');
+                            }
+                            commentsList.innerHTML = commentsHTML;
+                        }
+                    }
+                }
             })
-            .catch(error => {
-                console.error("Error fetching latest posts:", error);
-            });
+            .catch(error => console.error("Error syncing feed:", error));
     }
 
     _addPageEventListeners() {
@@ -65,12 +104,15 @@ class IndexPage extends BasePage {
 
         handleFormSubmit('createPostForm', '/Services/create_post.php', {
             messageId: 'modalErrorMessage',
-            onSuccess: () => {
+            onSuccess: (newPost) => {
                 this.postModal.style.display = 'none';
                 this.postTextarea.value = '';
-                this._fetchLatestPosts();
+
+                const postCard = createPost-Card(newPost);
+                this.postsContainer.prepend(postCard);
             },
         });
+// ...
 
         this.postsContainer.addEventListener('click', (event) => this._handlePostClick(event));
         this.postsContainer.addEventListener('submit', (event) => this._handleCommentSubmit(event));
@@ -105,7 +147,7 @@ class IndexPage extends BasePage {
             apiService.post('/Services/post_comment.php', formData)
                 .then(() => {
                     commentInput.value = '';
-                    this._fetchAllPosts();
+                    this._syncFeed();
                 })
                 .catch(error => alert('Could not post comment: ' + error.message))
                 .finally(() => {

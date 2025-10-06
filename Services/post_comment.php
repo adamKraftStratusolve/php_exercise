@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/cors_config.php';
 require_once '../auth_check.php';
 require_once '../db_config.php';
 require_once '../Model_Repositories/Comment.php';

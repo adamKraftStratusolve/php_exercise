@@ -39,7 +39,7 @@ function createPostCard(post, options = {}) {
 
     const avatarUrl = (post.profileImageUrl && post.profileImageUrl.trim() !== '')
         ? post.profileImageUrl
-        : '/uploads/default-avatar.png';
+        : '/Uploads/default-avatar.jpg';
 
     const avatarHTML = `<div class="post-avatar"><img src="${avatarUrl}" alt="${post.username}'s avatar"></div>`;
 
@@ -56,7 +56,7 @@ function createPostCard(post, options = {}) {
         const comments = post.comments.map(comment => {
             const commentAvatarUrl = (comment.profileImageUrl && comment.profileImageUrl.trim() !== '')
                 ? comment.profileImageUrl
-                : '/uploads/default-avatar.png';
+                : '/Uploads/default-avatar.jpg';
             return `
             <div class="comment">
                 <img src="${commentAvatarUrl}" alt="${comment.username}'s avatar" class="comment-avatar">
@@ -70,20 +70,23 @@ function createPostCard(post, options = {}) {
     }
 
     const postContentHTML = `
-        <div class="post-content">
-            <div class="post-header">
-                <div class="user-info">${post.firstName || ''} ${post.lastName || ''} <span>@${post.username}</span></div>
-            </div>
-            <p class="post-body">${post.postText}</p>
-            ${actionsHTML}
-            ${commentsHTML}
-            <form class="comment-form">
-                <input type="text" name="commentText" class="comment-input" placeholder="Write a comment..." required>
-                <input type="hidden" name="postId" value="${post.postId}">
-                <button type="submit" class="btn btn-sm">Post</button>
-            </form>
+    <div class="post-content">
+        <div class="post-header">
+            <div class="user-info">${post.firstName || ''} ${post.lastName || ''} <span>@${post.username}</span></div>
+            
+            <button class="btn-icon delete-btn" title="Delete Post">&times;</button>
+            
         </div>
-    `;
+        <p class="post-body">${post.postText}</p>
+        ${actionsHTML}
+        ${commentsHTML}
+        <form class="comment-form">
+            <input type="text" name="commentText" class="comment-input" placeholder="Write a comment..." required>
+            <input type="hidden" name="postId" value="${post.postId}">
+            <button type="submit" class="btn btn-sm">Post</button>
+        </form>
+    </div>
+`;
 
     postCard.innerHTML = avatarHTML + postContentHTML;
     return postCard;
