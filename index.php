@@ -5,9 +5,12 @@ require_once 'db_config.php';
 require_once './Model_Repositories/Posts.php';
 require_once './Services/api_helpers.php';
 
-$sinceId = isset($_GET['sinceId']) ? (int)$_GET['sinceId'] : 0;
+$postsPerPage = 5;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $postsPerPage;
+
 
 $postsInstance = new Posts();
-$allPosts = $postsInstance->getAllPosts($_SESSION['user_id'], $sinceId);
+$allPosts = $postsInstance->getAllPosts($_SESSION['user_id'], $postsPerPage, $offset);
 
 ApiResponse::sendJson($allPosts);

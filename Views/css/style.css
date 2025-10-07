@@ -405,3 +405,13 @@ a:hover {
 .fas, .far, .fab, .fa-solid {
     font-family: "Font Awesome 6 Free" !important;
 }
+
+.post-body, .comment-body p {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.post-body, .comment-body p {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}

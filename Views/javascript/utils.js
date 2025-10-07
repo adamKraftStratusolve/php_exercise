@@ -33,6 +33,8 @@ function handleFormSubmit(formId, apiEndpoint, options = {}) {
 }
 
 function createPostCard(post, options = {}) {
+    console.log('Inspecting post object:', post);
+
     const postCard = document.createElement('div');
     postCard.className = 'card post-card';
     postCard.setAttribute('data-post-id', post.postId);
@@ -42,6 +44,11 @@ function createPostCard(post, options = {}) {
         : '/Uploads/default-avatar.jpg';
 
     const avatarHTML = `<div class="post-avatar"><img src="${avatarUrl}" alt="${post.username}'s avatar"></div>`;
+
+    let deleteButtonHTML = '';
+    if (options.isMyProfile) {
+        deleteButtonHTML = `<button class="btn-icon delete-btn" title="Delete Post">&times;</button>`;
+    }
 
     const likedClass = post.userHasLiked ? 'liked' : '';
     const actionsHTML = `
@@ -60,33 +67,31 @@ function createPostCard(post, options = {}) {
             return `
             <div class="comment">
                 <img src="${commentAvatarUrl}" alt="${comment.username}'s avatar" class="comment-avatar">
-                <div class="comment-body">
-                    <strong>${comment.username}</strong>
-                    <p>${comment.commentText}</p>
-                </div>
-            </div>
-        `}).join('');
+                <div class="comment-body"><strong>${comment.username}</strong><p>${comment.commentText}</p></div>
+            </div>`;
+        }).join('');
         commentsHTML = `<div class="comments-list">${comments}</div>`;
     }
 
     const postContentHTML = `
-    <div class="post-content">
-        <div class="post-header">
-            <div class="user-info">${post.firstName || ''} ${post.lastName || ''} <span>@${post.username}</span></div>
-            
-            <button class="btn-icon delete-btn" title="Delete Post">&times;</button>
-            
+        <div class="post-content">
+            <div class="post-header">
+                <div class="user-info">${post.firstName || ''} ${post.lastName || ''} <span>@${post.username}</span></div>
+                ${deleteButtonHTML} 
+            </div>
+            <p class="post-body">${post.postText}</p>
+            ${actionsHTML}
+            ${commentsHTML}
+            <form class="comment-form">
+                <input type="text" name="commentText" class="comment-input" placeholder="Write a comment..." required maxlength="180">
+                <input type="hidden" name="postId" value="${post.postId}">
+                <div class="comment-form-footer">
+                    <span class="char-counter">0 / 180</span>
+                    <button type="submit" class="btn btn-sm">Post</button>
+                </div>
+            </form>
         </div>
-        <p class="post-body">${post.postText}</p>
-        ${actionsHTML}
-        ${commentsHTML}
-        <form class="comment-form">
-            <input type="text" name="commentText" class="comment-input" placeholder="Write a comment..." required>
-            <input type="hidden" name="postId" value="${post.postId}">
-            <button type="submit" class="btn btn-sm">Post</button>
-        </form>
-    </div>
-`;
+    `;
 
     postCard.innerHTML = avatarHTML + postContentHTML;
     return postCard;

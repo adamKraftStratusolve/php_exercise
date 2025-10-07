@@ -42,7 +42,7 @@ class ProfilePage extends BasePage {
             return;
         }
         posts.forEach(post => {
-            const postCard = createPostCard(post);
+            const postCard = createPostCard(post, { isMyProfile: true });
             this.postsContainer.appendChild(postCard);
         });
     }

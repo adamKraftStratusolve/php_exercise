@@ -15,7 +15,7 @@ class IndexPage extends BasePage {
 
         this._fetchAllPosts();
 
-        setInterval(() => this._syncFeed(), 10000);
+        setInterval(() => this._syncFeed(), 7000);
     }
 
     onProfileLoad(user) {
@@ -44,57 +44,60 @@ class IndexPage extends BasePage {
 
     _syncFeed() {
         const postElements = this.postsContainer.querySelectorAll('.post-card');
+        if (postElements.length === 0) return;
+
         const existingIds = Array.from(postElements).map(post => post.dataset.postId);
-        const latestId = existingIds.length > 0 ? existingIds[0] : 0; // The first post is the newest
+        const latestId = existingIds[0];
 
         apiService.post('/Services/sync_feed.php', { sinceId: latestId, existingIds: existingIds })
             .then(data => {
-
-                const newPosts = data.newPosts;
-                if (Array.isArray(newPosts) && newPosts.length > 0) {
-                    newPosts.reverse().forEach(post => {
+                if (data.newPosts && data.newPosts.length > 0) {
+                    data.newPosts.reverse().forEach(post => {
                         const postCard = createPostCard(post);
                         this.postsContainer.prepend(postCard);
                     });
                 }
 
-                const updates = data.updates;
-                for (const postId in updates) {
-                    const postData = updates[postId];
-                    const postCard = this.postsContainer.querySelector(`.post-card[data-post-id="${postId}"]`);
-
-                    if (postCard) {
-                        // Update Like Button
-                        const likeBtn = postCard.querySelector('.like-btn');
-                        const likeCountSpan = postCard.querySelector('.like-count');
-                        if (likeBtn && likeCountSpan) {
-                            likeCountSpan.textContent = postData.likeCount || 0;
-                            postData.userHasLiked ? likeBtn.classList.add('liked') : likeBtn.classList.remove('liked');
-                        }
-
-                        // Update Comments Section
-                        const commentsList = postCard.querySelector('.comments-list');
-                        if (commentsList) {
-                            let commentsHTML = '';
-                            if (postData.comments && postData.comments.length > 0) {
-                                commentsHTML = postData.comments.map(comment => {
-                                    const cAvatarUrl = (comment.profileImageUrl && comment.profileImageUrl.trim() !== '') ? comment.profileImageUrl : '/Uploads/default-avatar.jpg';
-                                    return `
-                                    <div class="comment">
-                                        <img src="${cAvatarUrl}" alt="${comment.username}'s avatar" class="comment-avatar">
-                                        <div class="comment-body">
-                                            <strong>${comment.username}</strong>
-                                            <p>${comment.commentText}</p>
-                                        </div>
-                                    </div>`;
-                                }).join('');
-                            }
-                            commentsList.innerHTML = commentsHTML;
-                        }
+                if (data.updates) {
+                    for (const postId in data.updates) {
+                        this.updatePostCard(postId, data.updates[postId]);
                     }
                 }
             })
             .catch(error => console.error("Error syncing feed:", error));
+    }
+
+    updatePostCard(postId, postData) {
+        const postCard = this.postsContainer.querySelector(`.post-card[data-post-id="${postId}"]`);
+        if (!postCard) return;
+
+        const likeBtn = postCard.querySelector('.like-btn');
+        const likeCountSpan = postCard.querySelector('.like-count');
+        if (likeBtn && likeCountSpan) {
+            likeCountSpan.textContent = postData.likeCount || 0;
+            postData.userHasLiked ? likeBtn.classList.add('liked') : likeBtn.classList.remove('liked');
+        }
+
+        const commentsList = postCard.querySelector('.comments-list');
+        if (commentsList) {
+            const serverComments = postData.comments || [];
+            const clientCommentCount = commentsList.children.length;
+
+            if (serverComments.length > clientCommentCount) {
+
+                const newComments = serverComments.slice(clientCommentCount);
+
+                newComments.forEach(comment => {
+                    const commentAvatarUrl = (comment.profileImageUrl && comment.profileImageUrl.trim() !== '') ? comment.profileImageUrl : '/Uploads/default-avatar.jpg';
+                    const newCommentHTML = `
+                <div class="comment">
+                    <img src="${commentAvatarUrl}" alt="${comment.username}'s avatar" class="comment-avatar">
+                    <div class="comment-body"><strong>${comment.username}</strong><p>${comment.commentText}</p></div>
+                </div>`;
+                    commentsList.insertAdjacentHTML('beforeend', newCommentHTML);
+                });
+            }
+        }
     }
 
     _addPageEventListeners() {
@@ -102,17 +105,33 @@ class IndexPage extends BasePage {
         this.closeModalBtn.addEventListener('click', () => this.postModal.style.display = 'none');
         this.cancelModalBtn.addEventListener('click', () => this.postModal.style.display = 'none');
 
+        const postCharCounter = document.getElementById('postCharCounter');
+        if (postCharCounter && this.postTextarea) {
+            this.postTextarea.addEventListener('input', () => {
+                const count = this.postTextarea.value.length;
+                postCharCounter.textContent = `${count} / 280`;
+            });
+        }
+
+        this.postsContainer.addEventListener('input', (event) => {
+            if (event.target.classList.contains('comment-input')) {
+                const input = event.target;
+                const form = input.closest('.comment-form');
+                const counter = form.querySelector('.char-counter');
+                const count = input.value.length;
+                counter.textContent = `${count} / 180`;
+            }
+        });
+
         handleFormSubmit('createPostForm', '/Services/create_post.php', {
             messageId: 'modalErrorMessage',
             onSuccess: (newPost) => {
                 this.postModal.style.display = 'none';
                 this.postTextarea.value = '';
-
-                const postCard = createPost-Card(newPost);
+                const postCard = createPostCard(newPost);
                 this.postsContainer.prepend(postCard);
             },
         });
-// ...
 
         this.postsContainer.addEventListener('click', (event) => this._handlePostClick(event));
         this.postsContainer.addEventListener('submit', (event) => this._handleCommentSubmit(event));
@@ -131,7 +150,7 @@ class IndexPage extends BasePage {
 
             const formData = new FormData();
             formData.append('postId', postId);
-            apiService.post('/Services/toggle_like.php', formData).catch(err => console.error(err));
+            apiService.post('/Services/toggle_like.php', formData).catch(err => console.error("Toggle like failed:", err));
         }
     }
 
@@ -141,17 +160,33 @@ class IndexPage extends BasePage {
             event.preventDefault();
             const commentInput = commentForm.querySelector('.comment-input');
             const formData = new FormData(commentForm);
+            const postCard = commentForm.closest('.post-card');
+            const commentsList = postCard.querySelector('.comments-list');
 
             commentInput.disabled = true;
 
             apiService.post('/Services/post_comment.php', formData)
-                .then(() => {
+                .then(response => {
+                    const newComment = response.success;
                     commentInput.value = '';
-                    this._syncFeed();
+
+                    const commentAvatarUrl = (newComment.profileImageUrl && newComment.profileImageUrl.trim() !== '') ? newComment.profileImageUrl : '/Uploads/default-avatar.jpg';
+                    const newCommentHTML = `
+                        <div class="comment">
+                            <img src="${commentAvatarUrl}" alt="${newComment.username}'s avatar" class="comment-avatar">
+                            <div class="comment-body"><strong>${newComment.username}</strong><p>${newComment.commentText}</p></div>
+                        </div>`;
+
+                    commentsList.insertAdjacentHTML('beforeend', newCommentHTML);
                 })
-                .catch(error => alert('Could not post comment: ' + error.message))
+                .catch(error => {
+                    if (error.message !== 'Redirecting to login.') {
+                        alert('Could not post comment: ' + error.message);
+                    }
+                })
                 .finally(() => {
                     commentInput.disabled = false;
+                    commentInput.focus();
                 });
         }
     }

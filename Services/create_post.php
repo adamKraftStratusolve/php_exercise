@@ -1,22 +1,32 @@
 <?php
-require_once __DIR__ . '/cors_config.php';
 require_once '../auth_check.php';
 require_once '../db_config.php';
 require_once '../Model_Repositories/Posts.php';
-require_once 'api_helpers.php';
+require_once '../Services/api_helpers.php';
 
 ApiResponse::requirePostMethod();
 
-if (empty($_POST['postText'])) {
+$postText = $_POST['postText'] ?? '';
+
+if (empty($postText)) {
     ApiResponse::error('Post text cannot be empty.');
 }
 
-$post = new Posts();
-$post->PostText = $_POST['postText'];
-$post->UserId = $_SESSION['user_id'];
+if (strlen($postText) > 280) {
+    ApiResponse::error('Post cannot exceed 280 characters.');
+}
 
-if ($post->createPost()) {
-    ApiResponse::success('Post created successfully.', 201);
+$post = new Posts();
+
+$post->postText = $postText;
+$post->userId = $_SESSION['user_id'];
+
+$newPostId = $post->createPost();
+
+if ($newPostId) {
+
+    $newPostData = $post->getPostById($newPostId, $_SESSION['user_id']);
+    ApiResponse::sendJson($newPostData, 201);
 } else {
     ApiResponse::error('Could not create post.', 500);
 }

@@ -37,11 +37,13 @@
         </div>
         <div class="modal-body">
             <form id="createPostForm">
-                <textarea id="postTextarea" name="postText" placeholder="What's on your mind?" required></textarea>
+                <textarea id="postTextarea" name="postText" placeholder="What's on your mind?" required maxlength="280"></textarea>
                 <div id="modalErrorMessage" class="error" style="display: none;"></div>
             </form>
         </div>
         <div class="modal-footer">
+            <span id="postCharCounter" class="char-counter">0 / 280</span>
+
             <button class="btn btn-outline" id="modalCancelBtn">Cancel</button>
             <button type="submit" form="createPostForm" class="btn btn-primary" id="modalPostBtn">Post</button>
         </div>
@@ -49,9 +51,9 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="../javascript/apiservice.js"></script>
-<script src="../javascript/utils.js"></script>
-<script src="../javascript/BasePage.js"></script>
-<script src="../javascript/index.js"></script>
+<script src="../javascript/apiservice.js?v=1.2"></script>
+<script src="../javascript/utils.js?v=1.2"></script>
+<script src="../javascript/BasePage.js?v=1.2"></script>
+<script src="../javascript/index.js?v=1.2"></script>
 </body>
 </html>
