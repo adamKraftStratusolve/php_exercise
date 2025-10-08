@@ -180,7 +180,6 @@ class Posts extends Model {
 
         $commentsByPostId = [];
         foreach ($comments as $comment) {
-            // Sanitize comment text here
             $comment['commentText'] = htmlspecialchars($comment['commentText']);
             $commentsByPostId[$comment['postId']][] = $comment;
         }

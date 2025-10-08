@@ -53,7 +53,7 @@ class ProfilePage extends BasePage {
             const file = event.target.files[0];
             if (!file) return;
 
-            const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+            const MAX_FILE_SIZE = 2 * 1024 * 1024;
 
             if (file.size > MAX_FILE_SIZE) {
                 this.pictureMessage.textContent = 'File is too large. Please select an image smaller than 2MB.';

@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . '/Services/cors_config.php';
 session_start();
 require_once 'db_config.php';

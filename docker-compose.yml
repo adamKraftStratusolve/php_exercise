@@ -1,8 +1,10 @@
+version: '3.8'
+
 services:
-  php-apache:
+  php_api_app:
     build: .
     container_name: php_api_app
     ports:
       - "8080:80"
     volumes:
-      - .:/var/www/html/
+      - .:/var/www/html
