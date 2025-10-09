@@ -2,6 +2,8 @@ class BasePage {
     constructor() {
         this.welcomeMessage = document.getElementById('welcomeMessage');
         this.logoutLink = document.getElementById('logoutLink');
+        this.navToggle = document.querySelector('.nav-toggle');
+        this.navLinks = document.querySelector('.nav-links');
     }
 
     init() {
@@ -17,6 +19,20 @@ class BasePage {
                     .then(() => {
                         window.location.href = 'login.html';
                     });
+            });
+        }
+
+        if (this.navToggle) {
+            this.navToggle.addEventListener('click', () => {
+                this.navLinks.classList.toggle('nav-active');
+                const icon = this.navToggle.querySelector('i');
+                if (icon.classList.contains('fa-bars')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
             });
         }
     }

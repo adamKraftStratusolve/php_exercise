@@ -7,6 +7,10 @@ class IndexPage extends BasePage {
         this.closeModalBtn = document.getElementById('modalCloseBtn');
         this.cancelModalBtn = document.getElementById('modalCancelBtn');
         this.postTextarea = document.getElementById('postTextarea');
+        this.currentPage = 1;
+        this.isLoading = false;
+        this.loadingNotification = document.getElementById('loadingNotification');
+        this.postCharCounter = document.getElementById('postCharCounter');
     }
 
     init() {
@@ -71,6 +75,12 @@ class IndexPage extends BasePage {
         const postCard = this.postsContainer.querySelector(`.post-card[data-post-id="${postId}"]`);
         if (!postCard) return;
 
+        const commentInput = postCard.querySelector('.comment-input');
+        if (document.activeElement === commentInput) {
+            console.log(`Skipping update for post ${postId} because user is typing.`);
+            return; // Exit the function to prevent DOM changes
+        }
+
         const likeBtn = postCard.querySelector('.like-btn');
         const likeCountSpan = postCard.querySelector('.like-count');
         if (likeBtn && likeCountSpan) {
@@ -84,9 +94,7 @@ class IndexPage extends BasePage {
             const clientCommentCount = commentsList.children.length;
 
             if (serverComments.length > clientCommentCount) {
-
                 const newComments = serverComments.slice(clientCommentCount);
-
                 newComments.forEach(comment => {
                     const commentAvatarUrl = (comment.profileImageUrl && comment.profileImageUrl.trim() !== '') ? comment.profileImageUrl : '/Uploads/default-avatar.jpg';
                     const newCommentHTML = `
@@ -124,10 +132,25 @@ class IndexPage extends BasePage {
         });
 
         handleFormSubmit('createPostForm', '/Services/create_post.php', {
+
             messageId: 'modalErrorMessage',
+            beforeSubmit: () => {
+                const postText = this.postTextarea.value;
+                if (postText.length > 280) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Character Limit Exceeded',
+                        text: 'Your post cannot exceed 280 characters.',
+                    });
+                    return false;
+                }
+                return true;
+            },
+
             onSuccess: (newPost) => {
                 this.postModal.style.display = 'none';
                 this.postTextarea.value = '';
+                this.postCharCounter.textContent = '0 / 280';
                 const postCard = createPostCard(newPost);
                 this.postsContainer.prepend(postCard);
             },
@@ -135,6 +158,7 @@ class IndexPage extends BasePage {
 
         this.postsContainer.addEventListener('click', (event) => this._handlePostClick(event));
         this.postsContainer.addEventListener('submit', (event) => this._handleCommentSubmit(event));
+        window.addEventListener('scroll', () => this._handleScroll());
     }
 
     _handlePostClick(event) {
@@ -170,6 +194,11 @@ class IndexPage extends BasePage {
                     const newComment = response.success;
                     commentInput.value = '';
 
+                    const charCounter = commentForm.querySelector('.char-counter');
+                    if (charCounter) {
+                        charCounter.textContent = '0 / 180';
+                    }
+
                     const commentAvatarUrl = (newComment.profileImageUrl && newComment.profileImageUrl.trim() !== '') ? newComment.profileImageUrl : '/Uploads/default-avatar.jpg';
                     const newCommentHTML = `
                         <div class="comment">
@@ -181,7 +210,11 @@ class IndexPage extends BasePage {
                 })
                 .catch(error => {
                     if (error.message !== 'Redirecting to login.') {
-                        alert('Could not post comment: ' + error.message);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: error.message,
+                        });
                     }
                 })
                 .finally(() => {
@@ -189,6 +222,49 @@ class IndexPage extends BasePage {
                     commentInput.focus();
                 });
         }
+    }
+
+    _handleScroll() {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !this.isLoading) {
+            this._loadMorePosts();
+        }
+    }
+
+    _loadMorePosts() {
+        this.isLoading = true;
+        this.currentPage++;
+
+        if (this.loadingNotification) {
+            this.loadingNotification.classList.add('show');
+        }
+
+        apiService.get(`/index.php?page=${this.currentPage}`)
+            .then(posts => {
+                if (this.loadingNotification) {
+                    this.loadingNotification.classList.remove('show');
+                }
+
+                if (Array.isArray(posts) && posts.length > 0) {
+                    posts.forEach(post => {
+                        const postCard = createPostCard(post);
+                        this.postsContainer.append(postCard);
+                    });
+                    this.isLoading = false;
+                } else {
+                    console.log("No more posts to load.");
+                }
+            })
+            .catch(error => {
+                console.error("Error loading more posts:", error);
+
+                if (this.loadingNotification) {
+                    this.loadingNotification.textContent = 'Could not load more posts.';
+                    setTimeout(() => {
+                        this.loadingNotification.classList.remove('show');
+                        this.loadingNotification.textContent = 'Loading more posts...';
+                    }, 3000);
+                }
+            });
     }
 }
 

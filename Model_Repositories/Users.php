@@ -38,14 +38,20 @@ class Users extends Model {
     }
 
     public function createUser() {
+        // Include the new defaults file
+        require_once __DIR__ . '/../defaults.php';
+
         $hashedPassword = password_hash($this->password, PASSWORD_DEFAULT);
-        $sql = "INSERT INTO users (first_name, last_name, email_address, username, password) VALUES (:first_name, :last_name, :email_address, :username, :password)";
+
+        $sql = "INSERT INTO users (first_name, last_name, email_address, username, password, profile_image_url) VALUES (:first_name, :last_name, :email_address, :username, :password, :profile_image_url)";
+
         $params = [
             'first_name' => $this->firstName,
             'last_name' => $this->lastName,
             'email_address' => $this->emailAddress,
             'username' => $this->username,
-            'password' => $hashedPassword
+            'password' => $hashedPassword,
+            'profile_image_url' => DEFAULT_AVATAR_BASE64
         ];
         $statement = $this->run($sql, $params);
 
@@ -209,5 +215,11 @@ class Users extends Model {
             return "Password must contain at least one special character.";
         }
         return null;
+    }
+
+    public function findByEmail(string $email) {
+        $sql = "SELECT * FROM users WHERE email_address = :email";
+        $statement = $this->run($sql, ['email' => $email]);
+        return $statement->fetch();
     }
 }

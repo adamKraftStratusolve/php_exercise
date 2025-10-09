@@ -36,6 +36,12 @@ if ($comment->create()) {
     $stmt->execute([$pdo->lastInsertId()]);
     $newCommentData = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    if ($newCommentData) {
+        $newCommentData['commentText'] = htmlspecialchars($newCommentData['commentText']);
+    }
+
+    ApiResponse::success($newCommentData);
+
     ApiResponse::success($newCommentData);
 } else {
     ApiResponse::error('Failed to post comment.', 500);

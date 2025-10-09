@@ -14,7 +14,7 @@ $currentUserId = $_SESSION['user_id'];
 
 $postsInstance = new Posts();
 
-$newPosts = $postsInstance->getAllPosts($currentUserId, $sinceId);
+$newPosts = $postsInstance->getNewPostsSince($currentUserId, $sinceId);
 
 $updates = $postsInstance->getPostUpdates($existingIds, $currentUserId);
 

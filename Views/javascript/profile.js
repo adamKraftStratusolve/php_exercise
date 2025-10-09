@@ -22,17 +22,32 @@ class ProfilePage extends BasePage {
     }
 
     onPageLoad(data) {
-
         this.onProfileLoad(data.profile);
         this._renderPosts(data.posts);
+        this.adjustNavbarForProfile();
     }
 
     onProfileLoad(user) {
+
         this.firstNameInput.value = user.firstName || '';
         this.lastNameInput.value = user.lastName || '';
         this.emailInput.value = user.emailAddress || '';
         this.usernameInput.value = user.username || '';
         this.profilePicturePreview.src = user.profileImageUrl || '/Uploads/default-avatar.jpg';
+    }
+
+    adjustNavbarForProfile() {
+        const profileLink = document.querySelector('.nav-links a[href="profile.html"]');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+
+        if (welcomeMessage) {
+            welcomeMessage.style.display = 'none';
+        }
+
+        if (profileLink) {
+            profileLink.textContent = 'Home';
+            profileLink.href = 'index.html';
+        }
     }
 
     _renderPosts(posts) {
@@ -42,13 +57,12 @@ class ProfilePage extends BasePage {
             return;
         }
         posts.forEach(post => {
-            const postCard = createPostCard(post, { isMyProfile: true });
+            const postCard = createPostCard(post, { isMyProfile: true, showCommentForm: false });
             this.postsContainer.appendChild(postCard);
         });
     }
 
     _addPageEventListeners() {
-
         this.pictureInput.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (!file) return;
@@ -75,13 +89,12 @@ class ProfilePage extends BasePage {
 
         this.savePictureBtn.addEventListener('click', () => {
             if (!this.selectedFile) return;
-            const formData = new FormData();
-            formData.append('profilePicture', this.selectedFile);
 
-            apiService.post('../../Services/upload_picture.php', formData)
+            const base64Image = this.profilePicturePreview.src;
+
+            apiService.post('/Services/update_profile_picture.php', { profilePicture: base64Image })
                 .then(data => {
-
-                    this.pictureMessage.textContent = 'Picture updated successfully! Image was converted to JPG format.';
+                    this.pictureMessage.textContent = data.success || 'Picture updated successfully!';
                     this.pictureMessage.className = 'message success';
                     this.pictureMessage.style.display = 'block';
                     this.savePictureBtn.style.display = 'none';
@@ -104,7 +117,7 @@ class ProfilePage extends BasePage {
                 return formData;
             },
             onSuccess: (data) => {
-                this.messageDiv.textContent = data.message || 'Profile updated successfully!';
+                this.messageDiv.textContent = data.success || 'Profile updated successfully!';
                 this.messageDiv.className = 'message success';
                 this.messageDiv.style.display = 'block';
                 this.currentPasswordInput.value = '';

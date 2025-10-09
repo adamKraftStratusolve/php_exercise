@@ -7,15 +7,15 @@ require_once 'api_helpers.php';
 
 ApiResponse::requirePostMethod();
 
-$username = $_POST['username'] ?? '';
 $email = $_POST['email'] ?? '';
 
-if (empty($username) || empty($email)) {
-    ApiResponse::error('Username and email are required.');
+if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    ApiResponse::error('A valid email address is required.');
 }
 
 $userInstance = new Users();
-$user = $userInstance->findUserByUsernameAndEmail($username, $email); // Correct method call
+// Use the new findByEmail function
+$user = $userInstance->findByEmail($email);
 
 if ($user) {
     $otp = random_int(100000, 999999);
@@ -26,10 +26,13 @@ if ($user) {
 
     $response_data = [
         'otp' => $otp,
-        'email' => $email
+        'email' => $user['email_address']
     ];
     ApiResponse::sendJson($response_data);
 
 } else {
-    ApiResponse::error('The username and/or email do not match our records.', 401);
+    ApiResponse::sendJson([
+        'otp' => random_int(100000, 999999), // Send a fake OTP
+        'email' => $email
+    ]);
 }

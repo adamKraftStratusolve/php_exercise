@@ -47,7 +47,7 @@ function createPostCard(post, options = {}) {
 
     let deleteButtonHTML = '';
     if (options.isMyProfile) {
-        deleteButtonHTML = `<button class="btn-icon delete-btn" title="Delete Post">&times;</button>`;
+        deleteButtonHTML = `<button class="btn-icon delete-btn" title="Delete Post"><i class="fas fa-times"></i></button>`;
     }
 
     const likedClass = post.userHasLiked ? 'liked' : '';
@@ -73,6 +73,19 @@ function createPostCard(post, options = {}) {
         commentsHTML = `<div class="comments-list">${comments}</div>`;
     }
 
+    let commentFormHTML = '';
+    if (options.showCommentForm !== false) {
+        commentFormHTML = `
+            <form class="comment-form">
+                <div class="input-wrapper">
+                    <input type="text" name="commentText" class="comment-input" placeholder="Write a comment..." required>
+                    <span class="char-counter">0 / 180</span>
+                </div>
+                <input type="hidden" name="postId" value="${post.postId}">
+                <button type="submit" class="btn btn-sm">Post</button>
+            </form>`;
+    }
+
     const postContentHTML = `
         <div class="post-content">
             <div class="post-header">
@@ -82,14 +95,7 @@ function createPostCard(post, options = {}) {
             <p class="post-body">${post.postText}</p>
             ${actionsHTML}
             ${commentsHTML}
-            <form class="comment-form">
-                <input type="text" name="commentText" class="comment-input" placeholder="Write a comment..." required maxlength="180">
-                <input type="hidden" name="postId" value="${post.postId}">
-                <div class="comment-form-footer">
-                    <span class="char-counter">0 / 180</span>
-                    <button type="submit" class="btn btn-sm">Post</button>
-                </div>
-            </form>
+            ${commentFormHTML} 
         </div>
     `;
 

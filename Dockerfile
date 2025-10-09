@@ -24,6 +24,3 @@ WORKDIR /var/www/html
 
 # Copy the application source code into the container
 COPY . /var/www/html/
-
-# Ensure the web server has permission to write to the Uploads directory
-RUN chown -R www-data:www-data /var/www/html/Uploads
