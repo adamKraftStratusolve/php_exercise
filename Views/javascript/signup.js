@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 signupForm.reset();
             }
             setTimeout(() => {
-                window.location.href = 'index.html';
+                window.location.href = 'index.php';
             }, 2000);
         }
     });

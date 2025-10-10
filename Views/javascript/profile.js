@@ -37,7 +37,7 @@ class ProfilePage extends BasePage {
     }
 
     adjustNavbarForProfile() {
-        const profileLink = document.querySelector('.nav-links a[href="profile.html"]');
+        const profileLink = document.querySelector('.nav-links a[href="profile.php"]');
         const welcomeMessage = document.getElementById('welcomeMessage');
 
         if (welcomeMessage) {
@@ -46,7 +46,7 @@ class ProfilePage extends BasePage {
 
         if (profileLink) {
             profileLink.textContent = 'Home';
-            profileLink.href = 'index.html';
+            profileLink.href = 'index.php';
         }
     }
 
@@ -92,7 +92,7 @@ class ProfilePage extends BasePage {
 
             const base64Image = this.profilePicturePreview.src;
 
-            apiService.post('/Services/update_profile_picture.php', { profilePicture: base64Image })
+            apiService.post('/Services/upload_picture.php', { profilePicture: base64Image })
                 .then(data => {
                     this.pictureMessage.textContent = data.success || 'Picture updated successfully!';
                     this.pictureMessage.className = 'message success';

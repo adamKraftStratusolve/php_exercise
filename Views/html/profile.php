@@ -7,15 +7,16 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-    <script><?php
-        require_once __DIR__ . '/../../defaults.php';
+    <script>
+        <?php
+        require_once __DIR__ . '/defaults.php';
         echo "const DEFAULT_AVATAR_BASE64 = " . json_encode(DEFAULT_AVATAR_BASE64) . ";";
-            ?></script>
+            ?>
+    </script>
 </head>
 <body>
 <nav class="navbar">
-    <a href="index.html" class="nav-brand">
+    <a href="index.php" class="nav-brand">
         <img src="../logo.svg" alt="ConnectSphere Logo" class="logo">
         <span>ConnectSphere</span>
     </a>
@@ -26,7 +27,7 @@
 
     <div class="nav-links">
         <span id="welcomeMessage">Welcome!</span>
-        <a href="profile.html">Profile</a>
+        <a href="profile.php">Profile</a>
         <a href="#" id="logoutLink">Logout</a>
     </div>
 </nav>
@@ -35,7 +36,7 @@
     <div class="card">
         <h2>Your Display Picture</h2>
         <div class="profile-picture-container">
-            <img id="profilePicturePreview" src="/Uploads/default-avatar.jpg" alt="Your profile picture">
+            <img id="profilePicturePreview" src="" alt="Your profile picture">
         </div>
         <input type="file" id="pictureInput" accept="image/jpeg, image/png, image/gif" style="display: none;">
         <button onclick="document.getElementById('pictureInput').click();" class="btn btn-outline">Choose Image</button>

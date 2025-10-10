@@ -33,20 +33,17 @@ function handleFormSubmit(formId, apiEndpoint, options = {}) {
 }
 
 function createPostCard(post, options = {}) {
-    console.log('Inspecting post object:', post);
-
     const postCard = document.createElement('div');
     postCard.className = 'card post-card';
     postCard.setAttribute('data-post-id', post.postId);
 
-    const avatarUrl = (post.profileImageUrl && post.profileImageUrl.trim() !== '')
-        ? post.profileImageUrl
-        : DEFAULT_AVATAR_BASE64;
-
+    // Creates the correct URL for the new avatar endpoint
+    const avatarUrl = `/Services/get_avatar.php?user_id=${post.userId}`;
     const avatarHTML = `<div class="post-avatar"><img src="${avatarUrl}" alt="${post.username}'s avatar"></div>`;
 
     let deleteButtonHTML = '';
     if (options.isMyProfile) {
+        // Ensures the delete button is an 'x' icon
         deleteButtonHTML = `<button class="btn-icon delete-btn" title="Delete Post"><i class="fas fa-times"></i></button>`;
     }
 
@@ -61,9 +58,8 @@ function createPostCard(post, options = {}) {
     let commentsHTML = '<div class="comments-list"></div>';
     if (post.comments && post.comments.length > 0) {
         const comments = post.comments.map(comment => {
-            const commentAvatarUrl = (comment.profileImageUrl && comment.profileImageUrl.trim() !== '')
-                ? comment.profileImageUrl
-                : DEFAULT_AVATAR_BASE64;
+            // Creates the correct URL for comment avatars
+            const commentAvatarUrl = `/Services/get_avatar.php?user_id=${comment.userId}`;
             return `
             <div class="comment">
                 <img src="${commentAvatarUrl}" alt="${comment.username}'s avatar" class="comment-avatar">
@@ -74,7 +70,9 @@ function createPostCard(post, options = {}) {
     }
 
     let commentFormHTML = '';
+    // Conditionally hides the comment form based on the 'showCommentForm' option
     if (options.showCommentForm !== false) {
+        // Correctly wraps the input and character counter
         commentFormHTML = `
         <form class="comment-form">
             <div class="input-wrapper">

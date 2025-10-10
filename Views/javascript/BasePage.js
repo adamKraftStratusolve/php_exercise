@@ -38,7 +38,7 @@ class BasePage {
     }
 
     _fetchUserProfile() {
-        apiService.get('/profile.php')
+        apiService.get('/profileBackend.php')
             .then(data => {
                 this.onPageLoad(data);
             })

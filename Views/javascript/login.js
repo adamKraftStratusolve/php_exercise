@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('rememberedCredential', credentialInput.value);
             }
 
-            window.location.href = 'index.html';
+            window.location.href = '../html/index.php';
         }
     });
 });

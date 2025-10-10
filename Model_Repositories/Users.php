@@ -159,7 +159,7 @@ class Users extends Model {
         return $statement->fetch();
     }
 
-    public function forcePasswordUpdate(int $userId, string $newPassword): bool {
+    public function forcePasswordUpdate(int $userId, string $newPassword) {
         $newHashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
         $sql = "UPDATE users SET password = :password WHERE user_id = :user_id";
         $params = [
@@ -170,14 +170,18 @@ class Users extends Model {
         return $statement->rowCount() > 0;
     }
 
-    public function updateProfilePicture(int $userId, string $imageUrl): bool {
+    public function updateProfilePicture(int $userId, string $imageUrl) {
         $sql = "UPDATE users SET profile_image_url = :image_url WHERE user_id = :user_id";
         $params = [
             'image_url' => $imageUrl,
             'user_id' => $userId
         ];
-        $statement = $this->run($sql, $params);
-        return $statement->rowCount() > 0;
+        try {
+            $this->run($sql, $params);
+            return true;
+        } catch (PDOException $e) {
+            return false;
+        }
     }
 
     public function findUserByUsernameAndEmail(string $username, string $email) {

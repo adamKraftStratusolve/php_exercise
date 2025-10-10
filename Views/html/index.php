@@ -7,15 +7,17 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script><?php
-        require_once __DIR__ . '/../../defaults.php';
+    <script>
+        <?php
+        require_once __DIR__ . '/defaults.php';
         echo "const DEFAULT_AVATAR_BASE64 = " . json_encode(DEFAULT_AVATAR_BASE64) . ";";
-            ?></script>
+            ?>
+    </script>
 
 </head>
 <body>
 <nav class="navbar">
-    <a href="index.html" class="nav-brand">
+    <a href="index.php" class="nav-brand">
         <img src="../logo.svg" alt="ConnectSphere Logo" class="logo">
         <span>ConnectSphere</span>
     </a>
@@ -26,7 +28,7 @@
 
     <div class="nav-links">
         <span id="welcomeMessage">Welcome!</span>
-        <a href="profile.html">Profile</a>
+        <a href="profile.php">Profile</a>
         <a href="#" id="logoutLink">Logout</a>
     </div>
 </nav>

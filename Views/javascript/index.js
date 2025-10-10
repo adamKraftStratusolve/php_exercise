@@ -29,7 +29,7 @@ class IndexPage extends BasePage {
     }
 
     _fetchAllPosts() {
-        apiService.get('/index.php')
+        apiService.get('/indexBackend.php')
             .then(posts => {
                 this.postsContainer.innerHTML = '';
                 if (Array.isArray(posts)) {
@@ -96,7 +96,7 @@ class IndexPage extends BasePage {
             if (serverComments.length > clientCommentCount) {
                 const newComments = serverComments.slice(clientCommentCount);
                 newComments.forEach(comment => {
-                    const commentAvatarUrl = (comment.profileImageUrl && comment.profileImageUrl.trim() !== '') ? comment.profileImageUrl : '/Uploads/default-avatar.jpg';
+                    const commentAvatarUrl = (comment.profileImageUrl && comment.profileImageUrl.trim() !== '') ? comment.profileImageUrl : DEFAULT_AVATAR_BASE64;
                     const newCommentHTML = `
                 <div class="comment">
                     <img src="${commentAvatarUrl}" alt="${comment.username}'s avatar" class="comment-avatar">
@@ -199,7 +199,7 @@ class IndexPage extends BasePage {
                         charCounter.textContent = '0 / 180';
                     }
 
-                    const commentAvatarUrl = (newComment.profileImageUrl && newComment.profileImageUrl.trim() !== '') ? newComment.profileImageUrl : '/Uploads/default-avatar.jpg';
+                    const commentAvatarUrl = (newComment.profileImageUrl && newComment.profileImageUrl.trim() !== '') ? newComment.profileImageUrl : DEFAULT_AVATAR_BASE64;
                     const newCommentHTML = `
                         <div class="comment">
                             <img src="${commentAvatarUrl}" alt="${newComment.username}'s avatar" class="comment-avatar">
@@ -238,7 +238,7 @@ class IndexPage extends BasePage {
             this.loadingNotification.classList.add('show');
         }
 
-        apiService.get(`/index.php?page=${this.currentPage}`)
+        apiService.get(`/indexBackend.php?page=${this.currentPage}`)
             .then(posts => {
                 if (this.loadingNotification) {
                     this.loadingNotification.classList.remove('show');
