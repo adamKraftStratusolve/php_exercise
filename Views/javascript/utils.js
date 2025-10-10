@@ -41,7 +41,7 @@ function createPostCard(post, options = {}) {
 
     const avatarUrl = (post.profileImageUrl && post.profileImageUrl.trim() !== '')
         ? post.profileImageUrl
-        : '/Uploads/default-avatar.jpg';
+        : DEFAULT_AVATAR_BASE64;
 
     const avatarHTML = `<div class="post-avatar"><img src="${avatarUrl}" alt="${post.username}'s avatar"></div>`;
 
@@ -63,7 +63,7 @@ function createPostCard(post, options = {}) {
         const comments = post.comments.map(comment => {
             const commentAvatarUrl = (comment.profileImageUrl && comment.profileImageUrl.trim() !== '')
                 ? comment.profileImageUrl
-                : '/Uploads/default-avatar.jpg';
+                : DEFAULT_AVATAR_BASE64;
             return `
             <div class="comment">
                 <img src="${commentAvatarUrl}" alt="${comment.username}'s avatar" class="comment-avatar">
@@ -76,14 +76,14 @@ function createPostCard(post, options = {}) {
     let commentFormHTML = '';
     if (options.showCommentForm !== false) {
         commentFormHTML = `
-            <form class="comment-form">
-                <div class="input-wrapper">
-                    <input type="text" name="commentText" class="comment-input" placeholder="Write a comment..." required>
-                    <span class="char-counter">0 / 180</span>
-                </div>
-                <input type="hidden" name="postId" value="${post.postId}">
-                <button type="submit" class="btn btn-sm">Post</button>
-            </form>`;
+        <form class="comment-form">
+            <div class="input-wrapper">
+                <input type="text" name="commentText" class="comment-input" placeholder="Write a comment..." required>
+                <span class="char-counter">0 / 180</span>
+            </div>
+            <input type="hidden" name="postId" value="${post.postId}">
+            <button type="submit" class="btn btn-sm">Post</button>
+        </form>`;
     }
 
     const postContentHTML = `

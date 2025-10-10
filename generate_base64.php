@@ -1,5 +1,5 @@
 <?php
-$path = 'Uploads/default-avatar.jpg';
+$path = 'pexels-francesco-ungaro-281260.jpg';
 
 $type = pathinfo($path, PATHINFO_EXTENSION);
 $data = file_get_contents($path);

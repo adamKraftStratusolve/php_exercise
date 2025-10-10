@@ -30,7 +30,8 @@ class Posts extends Model {
         return false;
     }
 
-    public function getAllPosts(int $userId, int $limit, int $offset) {
+    public function getAllPosts(int $userId, int $limit, int $offset): array
+    {
         $sql = "SELECT
                     p.post_id AS postId,
                     p.post_text AS postText,
@@ -42,14 +43,10 @@ class Posts extends Model {
                     u.profile_image_url AS profileImageUrl,
                     (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS likeCount,
                     EXISTS(SELECT 1 FROM post_likes WHERE post_id = p.post_id AND user_id = :userId) AS userHasLiked
-                FROM
-                    posts p
-                JOIN
-                    users u ON p.user_id = u.user_id
-                WHERE
-                    p.is_deleted = 0
-                ORDER BY
-                    p.post_id DESC
+                FROM posts p
+                JOIN users u ON p.user_id = u.user_id
+                WHERE p.is_deleted = 0 -- <-- THE CRUCIAL FILTER
+                ORDER BY p.post_id DESC
                 LIMIT :limit OFFSET :offset";
 
         try {
@@ -59,38 +56,82 @@ class Posts extends Model {
             $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
             $stmt->execute();
             $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            return $this->attachCommentsAndSanitize($posts); // Ensure sanitization
+            return $this->attachCommentsAndSanitize($posts);
         } catch (PDOException $e) {
-            // In production, you would log the error. For now, we die to see the error.
             die("Database Error in getAllPosts: " . $e->getMessage());
         }
     }
 
-    public function getPostsByUserId(int $profileUserId, int $currentUserId): array {
+    public function getNewPostsSince(int $userId, int $sinceId): array
+    {
         $sql = "SELECT
-                p.post_id AS postId,
-                p.post_text AS postText,
-                p.post_timestamp AS postDate,
-                u.username,
-                u.first_name AS firstName,
-                u.last_name AS lastName,
-                u.profile_image_url AS profileImageUrl,
-                (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS likeCount,
-                EXISTS(SELECT 1 FROM post_likes WHERE post_id = p.post_id AND user_id = :current_user_id) AS userHasLiked
-            FROM
-                posts p
-            JOIN
-                users u ON p.user_id = u.user_id
-            WHERE p.user_id = :profile_user_id
-            ORDER BY p.post_timestamp DESC";
+                    p.post_id AS postId,
+                    p.post_text AS postText,
+                    p.post_timestamp AS postDate,
+                    u.user_id AS userId,
+                    u.username,
+                    u.first_name AS firstName,
+                    u.last_name AS lastName,
+                    u.profile_image_url AS profileImageUrl,
+                    (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS likeCount,
+                    EXISTS(SELECT 1 FROM post_likes WHERE post_id = p.post_id AND user_id = :userId) AS userHasLiked
+                FROM posts p
+                JOIN users u ON p.user_id = u.user_id
+                WHERE p.post_id > :sinceId AND p.is_deleted = 0 -- <-- THE CRUCIAL FILTER
+                ORDER BY p.post_id DESC";
 
-        $statement = $this->run($sql, ['profile_user_id' => $profileUserId, 'current_user_id' => $currentUserId]);
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
+            $stmt->bindParam(':sinceId', $sinceId, PDO::PARAM_INT);
+            $stmt->execute();
+            $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $this->attachCommentsAndSanitize($posts);
+        } catch (PDOException $e) {
+            die("Database Error in getNewPostsSince: " . $e->getMessage());
+        }
+    }
+
+    public function getPostsByUserId(int $profileUserId, int $currentUserId, int $sinceId = 0) {
+        $sql = "SELECT
+            p.post_id AS postId,
+            p.post_text AS postText,
+            p.post_timestamp AS createdAt,
+            u.username,
+            u.first_name AS firstName,
+            u.last_name AS lastName,
+            u.profile_image_url AS profileImageUrl,
+            (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS likeCount,
+            (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id AND user_id = :current_user_id) AS userHasLiked
+        FROM
+            posts p
+        JOIN
+            users u ON p.user_id = u.user_id
+        WHERE p.user_id = :profile_user_id AND p.is_deleted = 0";
+
+        $params = [
+            'profile_user_id' => $profileUserId,
+            'current_user_id' => $currentUserId
+        ];
+
+        if ($sinceId > 0) {
+            $sql .= " AND p.post_id > :since_id";
+            $params['since_id'] = $sinceId;
+        }
+
+        $sql .= " ORDER BY p.post_timestamp DESC";
+
+        $statement = $this->run($sql, $params);
         $posts = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        if (empty($posts)) {
+            return [];
+        }
 
         return $this->attachCommentsAndSanitize($posts);
     }
 
-    public function getPostById(int $postId, int $currentUserId): ?array {
+    public function getPostById(int $postId, int $currentUserId) {
         $sql = "SELECT
                     p.post_id AS postId,
                     p.post_text AS postText,
@@ -121,7 +162,7 @@ class Posts extends Model {
         return $postsArray[0];
     }
 
-    public function getPostUpdates(array $postIds, int $currentUserId): array {
+    public function getPostUpdates(array $postIds, int $currentUserId) {
         if (empty($postIds)) {
             return [];
         }
@@ -169,7 +210,7 @@ class Posts extends Model {
     }
 
 
-    public function deletePost($postId, $userId): bool {
+    public function deletePost($postId, $userId) {
         $sql = "UPDATE posts SET is_deleted = 1 WHERE post_id = :post_id AND user_id = :user_id";
         $stmt = $this->run($sql, ['post_id' => $postId, 'user_id' => $userId]);
         return $stmt->rowCount() > 0;
@@ -187,51 +228,7 @@ class Posts extends Model {
         }
     }
 
-    public function getNewPostsSince(int $userId, int $sinceId): array
-    {
-        $sql = "SELECT
-                    p.post_id AS postId,
-                    p.post_text AS postText,
-                    p.post_timestamp AS postDate,
-                    u.user_id AS userId,
-                    u.username,
-                    u.first_name AS firstName,
-                    u.last_name AS lastName,
-                    u.profile_image_url AS profileImageUrl,
-                    (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS likeCount,
-                    EXISTS(SELECT 1 FROM post_likes WHERE post_id = p.post_id AND user_id = :userId) AS userHasLiked
-                FROM
-                    posts p
-                JOIN
-                    users u ON p.user_id = u.user_id
-                WHERE
-                    p.post_id > :sinceId AND p.is_deleted = 0
-                ORDER BY
-                    p.post_id DESC";
-
-        try {
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
-            $stmt->bindParam(':sinceId', $sinceId, PDO::PARAM_INT);
-            $stmt->execute();
-            $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            // Sanitize the data before returning it
-            foreach ($posts as &$post) {
-                $post['postText'] = htmlspecialchars($post['postText']);
-                $post['username'] = htmlspecialchars($post['username']);
-                $post['firstName'] = htmlspecialchars($post['firstName']);
-                $post['lastName'] = htmlspecialchars($post['lastName']);
-            }
-
-            return $this->attachCommentsAndSanitize($posts);
-
-        } catch (PDOException $e) {
-            die("Database Error in getNewPostsSince: " . $e->getMessage());
-        }
-    }
-
-    private function attachCommentsAndSanitize(array $posts): array {
+    private function attachCommentsAndSanitize(array $posts) {
         if (empty($posts)) {
             return [];
         }

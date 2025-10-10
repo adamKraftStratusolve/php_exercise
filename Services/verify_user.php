@@ -14,7 +14,6 @@ if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
 }
 
 $userInstance = new Users();
-// Use the new findByEmail function
 $user = $userInstance->findByEmail($email);
 
 if ($user) {

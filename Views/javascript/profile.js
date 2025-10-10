@@ -33,7 +33,7 @@ class ProfilePage extends BasePage {
         this.lastNameInput.value = user.lastName || '';
         this.emailInput.value = user.emailAddress || '';
         this.usernameInput.value = user.username || '';
-        this.profilePicturePreview.src = user.profileImageUrl || '/Uploads/default-avatar.jpg';
+        this.profilePicturePreview.src = user.profileImageUrl || DEFAULT_AVATAR_BASE64;
     }
 
     adjustNavbarForProfile() {

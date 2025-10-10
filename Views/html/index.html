@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script><?php
+        require_once __DIR__ . '/../../defaults.php';
+        echo "const DEFAULT_AVATAR_BASE64 = " . json_encode(DEFAULT_AVATAR_BASE64) . ";";
+            ?></script>
+
 </head>
 <body>
 <nav class="navbar">
